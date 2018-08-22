@@ -1,0 +1,538 @@
+swagger: '2.0'
+info:
+  version: 0.5.0
+  title: Samnordisk runtextdatabas söktjänst API
+  description: >-
+    Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
+    Riksantikvarieämbetets forskningsplattform för runor inom projektet
+    Evighetsrunor. API:et används för att hitta och söka i runtexter i SRD. Sökresultaten innehåller endast grundinformationen om runtexterna (id:n, text och geografiska koordinater). Ytterligare metadata runt runtexterna, bärarobjekt samt kopplad information hämtas via K-SAMSÖK
+  contact:
+    url: 'https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/'
+    email: toni.thomsson@raa.se
+host: uu.se
+schemes:
+  - https
+basePath: /evighetsrunor/api/v1
+paths:
+  '/signums/{matching_text}':
+    get:
+      summary: Hämtar lista med signum
+      description: >-
+        Hämta en lista med signum som kan användas vid enkel sökning (typeahead)
+        på signum
+      parameters:
+        - name: matching_text
+          in: path
+          required: true
+          type: string
+          description: Del av signum att matcha mot
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: En lista med signum
+          schema:
+            type: array
+            example:
+              - Öl 4 $
+              - Öl Fv1911;274 B $
+              - ...
+            items:
+              type: string
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Listor för enkel sökning
+  '/places/{matching_text}':
+    get:
+      summary: Hämtar lista med platser
+      description: >-
+        Hämta en lista med platser som kan användas vid enkel sökning
+        (typeahead) på plats
+      parameters:
+        - name: matching_text
+          in: path
+          required: true
+          type: string
+          description: Del av namn på plats att matcha mot
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: En lista med platser
+          schema:
+            type: array
+            example:
+              - id: 12
+                name: Abrahamstorp
+              - id: 13
+                name: Ackarby
+              - id: 14
+                name: ...
+            items:
+              $ref: '#/definitions/SelectionItem'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Listor för enkel sökning
+  /selection/groups:
+    get:
+      summary: Hämtar lista med urvalsgrupper
+      description: >-
+        Hämtar lista med urvalsgrupper att användas när man sätter filtervillkor
+        för en avancerad sökning
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: En lista med urvalsgrupper
+          schema:
+            type: array
+            example:
+              - id: 1
+                name: Plats
+              - id: 2
+                name: Socken
+              - id: 3
+                name: Härrad
+              - id: 4
+                name: ...
+            items:
+              $ref: '#/definitions/SelectionGroup'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Urval för filtrering av avancerad sökning
+  '/selection/{group_id}/{matching_text}':
+    get:
+      summary: Hämtar lista med urval
+      description: >-
+        Hämtar lista med urval för en urvalsgrupp att användas när man sätter
+        filtervillkor för en avancerad sökning
+      produces:
+        - application/json
+      parameters:
+        - name: group_id
+          in: path
+          required: true
+          type: integer
+          description: Id för urvalsgrupp
+        - name: matching_text
+          in: path
+          required: true
+          type: string
+          description: Del av namn på urval att matcha mot
+      responses:
+        '200':
+          description: En lista med urval
+          schema:
+            type: array
+            example:
+              - id: 12
+                name: Abrahamstorp
+              - id: 13
+                name: Ackarby
+              - id: 14
+                name: ...
+            items:
+              $ref: '#/definitions/SelectionItem'
+        '404':
+          description: (Not found). Gruppen saknas
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              status: 404
+              message: Gruppen saknas
+              path: /selection/12/test
+              timestamp: '1990-12-31T23:59:60Z'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Urval för filtrering av avancerad sökning
+  /search:
+    get:
+      summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
+      description: Söker efter runtexter med del av plats eller signum
+      produces:
+        - application/json
+      parameters:
+        - name: matching_text
+          in: query
+          required: true
+          type: string
+          description: Söksträng
+        - name: search_field
+          in: query
+          required: true
+          type: string
+          enum:
+            - PLACE
+            - SIGNUM
+          description: Sökfält
+      responses:
+        '200':
+          description: (OK)
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RunicInscription'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Sökning
+    post:
+      summary: Avancerad sökning i runtexter enligt sökvillkor
+      description: >-
+        Sök i runtexter enligt kombinerade sökvillkor för text samt filtrering
+        enligt urval
+      parameters:
+        - name: query
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SearchQuery'
+      responses:
+        '200':
+          description: Hittade runtexter med markering av hittade ord
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SearchResult'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Sökning
+  /map:
+    get:
+      summary: Hämtar alla geografiska punkter 
+      description: Hämtar alla geografiska punkter där runinskriptioner finns eller har hittats
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: (OK). Poster hittades
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GeoPosition'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Karta  
+  
+  '/inscription/{id}':
+    get:
+      summary: Hämtar en runinskrift med hjälp av signum eller URI
+      description: Hämtar en runinskrift med hjälp av signum eller URI
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: Signum eller URI
+      responses:
+        '200':
+          description: (OK). Post hittades
+          schema:
+            $ref: '#/definitions/RunicInscription'
+        '404':
+          description: (Not found). Ingen träff
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              status: 404
+              message: Signum eller URI saknas
+              path: /selection/12/test
+              timestamp: '1990-12-31T23:59:60Z'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Entiteter
+definitions:
+  SearchQuery:
+    description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning i SRD
+    type: object
+    required:
+      - find
+    properties:
+      find:
+        description: Textsökfråga
+        type: array
+        items:
+          $ref: '#/definitions/TextQuery'
+      filter:
+        description: Filtrering
+        type: array
+        items:
+          $ref: '#/definitions/Selection'
+  SearchResult:
+    description: Resultat av en sökfråga
+    type: object
+    required:
+      - inscription
+      - marked_words_index
+    properties:
+      inscription:
+        description: Runinskrifter
+        type: array
+        items:
+          $ref: '#/definitions/RunicInscription'
+      found_words_index:
+        type: array
+        example:
+          - 0
+          - 4
+          - 6
+        items:
+          type: integer
+  RunicInscription:
+    description: Grundinformation för en runinskription
+    type: object
+    required:
+      - signum
+      - uri
+      - translation
+      - geo_position
+    properties:
+      signum:
+        description: Signum
+        example: Öl 4 $
+        type: string
+      alt_signum:
+        description: Alternativt signum
+        type: array
+        example:
+          - B 1063
+          - L 1318
+          - ...
+        items:
+          type: string
+      uri:
+        description: Persistent identifierare för runinskriften (används för att hämta information från K-SAMSÖK)
+        example: >-
+          https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
+        type: string
+      object_uri:
+        description: Persistent identifierare för bärare av runinskriften (används för att hämta information från K-SAMSÖK)
+        example: >-
+          https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
+        type: string
+      translation:
+        description: Översättning av runtext
+        type: array
+        items:
+          $ref: '#/definitions/RunicTextTranslation'
+      position:
+        $ref: '#/definitions/GeoPosition'
+  RunicTextTranslation:
+    description: En transliterering/normalisering/översättning av en runtext
+    type: object
+    required:
+      - text
+      - language
+    properties:
+      text:
+        description: Runtext
+        example: ...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina
+        type: string
+      language:
+        description: Typ/språk/normalisering för översättningen
+        type: string
+        enum:
+          - RUNIC_TRANSLITERATION
+          - OLD_SCANDINAVIAN_NORMALISATION
+          - OLD_WEST_NORSE_NORMALISATION
+          - ENGLISH_TRANSLATION
+  GeoPosition:
+    description: Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
+    type: object
+    required:
+      - current
+    properties:
+      current:
+        $ref: '#/definitions/Geometry'
+      orginal:
+        $ref: '#/definitions/Geometry'
+  TextQuery:
+    description: Sökfråga som används för att sätta villkor för textsökning i SRD
+    type: object
+    required:
+      - matching_text
+      - name
+      - language
+    properties:
+      operator:
+        description: >-
+          Anger operator för användas när flera sökfrågor kombineras. Första
+          frågan i en SearchQuery behöver inte ha en operator
+        type: string
+        enum:
+          - AND
+          - OR
+          - NOT
+      matching_text:
+        description: Söktext
+        type: string
+      name:
+        description: Anger hur/om sökning skall ske i egennamn
+        type: string
+        enum:
+          - INCLUDE
+          - EXCLUDE
+          - ONLY
+      language:
+        description: Anger i vilken översättning sökningen skall ske
+        type: string
+        enum:
+          - LATIN_TRANSLITERATION_TRANSCRIPTION
+          - NATIONAL_IDIOM
+          - OLD_WEST_NORDIC
+          - ENGLISH
+  SelectionGroup:
+    description: 'Urvalsgrupp (tex socken, härrad eller kommun)'
+    type: object
+    required:
+      - id
+      - name
+      - items
+    properties:
+      id:
+        description: Identitet för urvalsgruppen
+        example: 1
+        type: integer
+      name:
+        description: Namn på urvalsgruppen
+        example: Socken
+        type: string
+  SelectionItem:
+    description: Ett urval (tex socken Bro)
+    type: object
+    required:
+      - id
+      - name
+    properties:
+      id:
+        description: Identitet för urvalet
+        example: 12
+        type: integer
+      name:
+        description: Namn på urval
+        example: Bro
+        type: string
+  Selection:
+    description: Kompletterande filter med urvalsgrupper
+    type: object
+    required:
+      - operator
+      - item
+    properties:
+      operator:
+        description: Operator att användas när filter kombineras
+        type: string
+        enum:
+          - AND
+          - NOT
+      item:
+        $ref: '#/definitions/SelectionItem'
+  Geometry:
+    description: >-
+      Geometrier uttryckta i geoJSON formatet och benämns som GeoJSON[2008]. Se
+      specifikationen http://geojson.org/.
+
+
+      TODO Vilket koordinatsystem skall vi använda? SR-ORG:7483 EPSG:3857 --
+      WGS84 Web Mercator (Auxiliary Sphere) för att visa på Google-maps?
+    type: object
+    required:
+      - type
+      - coordinates
+    properties:
+      type:
+        type: string
+        enum:
+          - Point
+          - Linestring
+          - Polygon
+        example: Point
+      crs:
+        type: object
+        required:
+          - type
+        properties:
+          type:
+            type: string
+            enum:
+              - name
+          properties:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                description: Anger koordinatsystemet för geometrierna
+                type: string
+                example: 'EPSG:3857'
+      coordinates:
+        additionalProperties: true
+        type: array
+        items:
+          type: array
+          items:
+            type: array
+            example:
+              - 57.6353939
+              - 18.2954135
+            items:
+              type: number
+  Error:
+    description: Ett fel
+    type: object
+    required:
+      - status
+      - message
+      - path
+      - timestamp
+    properties:
+      status:
+        type: integer
+        example: 500
+        description: Http statuskod
+      message:
+        type: string
+        example: 'Tekniskt fel, försök senare'
+        description: Innehåller ett felmeddelande tänkt att presenteras för slutanvändare
+      exception:
+        type: string
+        example: java.lang.NullPointerException
+        description: Innehåller ett felmeddelande tänkt för tekniker vid felsökning
+      path:
+        type: string
+        example: /selection/13/Test
+        description: Anger den resourcepath där felet uppstod
+      timestamp:
+        type: string
+        example: '1990-12-31T23:59:60Z'
+        format: dateTime
+        description: >-
+          Anger tidpunkten när felet inträffade. Tidpunkt angiven som date-time,
+          se RFC3339 (Internet Date/Time Format)
