@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.7.1
+  version: 0.7.2
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -65,11 +65,11 @@ paths:
           schema:
             type: array
             example:
-              - id: 12
+              - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
                 name: Abrahamstorp
-              - id: 13
+              - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
                 name: Ackarby
-              - id: 14
+              - id: b70ec612-cef6-446d-afc0-4e3387804842
                 name: ...
             items:
               $ref: '#/definitions/SelectionItem'
@@ -93,13 +93,13 @@ paths:
           schema:
             type: array
             example:
-              - id: 1
+              - id: 161ab23e-7566-43a0-9dbe-c7f237f27765
                 name: Plats
-              - id: 2
+              - id: d3c41141-ef42-4ef3-9cbb-3d49fa6acffe
                 name: Socken
-              - id: 3
+              - id: 30ba8d99-f27b-48fc-8048-7892eb3a0fbc
                 name: Härrad
-              - id: 4
+              - id: b95dc24b-a1f6-4310-8a9e-3d0264f0f53e
                 name: ...
             items:
               $ref: '#/definitions/SelectionGroup'
@@ -121,7 +121,7 @@ paths:
         - name: group_id
           in: path
           required: true
-          type: integer
+          type: string
           description: Id för urvalsgrupp
         - name: matching_text
           in: path
@@ -134,11 +134,11 @@ paths:
           schema:
             type: array
             example:
-              - id: 12
+              - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
                 name: Abrahamstorp
-              - id: 13
+              - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
                 name: Ackarby
-              - id: 14
+              - id: b70ec612-cef6-446d-afc0-4e3387804842
                 name: ...
             items:
               $ref: '#/definitions/SelectionItem'
@@ -246,7 +246,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/GeoPosition'
+              $ref: '#/definitions/RunicInscriptionGeoPosition'
         '500':
           description: (Internal server error). Ett oväntat fel inträffade.
           schema:
@@ -342,10 +342,10 @@ definitions:
           - INCLUDE
           - EXCLUDE
           - ONLY
-      translation:
+      translation_type_id:
         description: Anger i vilken översättning sökningen skall ske
-        example: 1
-        type: integer
+        example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+        type: string
   SearchResult:
     description: Resultat av en sökfråga
     type: object
@@ -404,7 +404,7 @@ definitions:
         items:
           $ref: '#/definitions/RunicTextTranslation'
       position:
-        $ref: '#/definitions/GeoPosition'
+        $ref: '#/definitions/RunicInscriptionGeoPosition'
   RunicTextTranslation:
     description: En transliterering/normalisering/översättning av en runtext
     type: object
@@ -416,7 +416,7 @@ definitions:
         description: Runtext
         example: ...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina
         type: string
-      translation:
+      translation_type:
         $ref: '#/definitions/RunicTextTranslationType'
   RunicTextTranslationType:
     description: Översättningstyp, transliterering/normalisering/översättning av en runtext
@@ -429,8 +429,8 @@ definitions:
     properties:
       id:
         description: Id för översättningstypen
-        example: 1
-        type: integer
+        example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+        type: string
       name:
         description: Namn på översättningstypen
         example: Fornvästnordiska
@@ -443,12 +443,16 @@ definitions:
         description: Anger om texter av denna översättningstyp är kompletta
         example: true
         type: boolean  
-  GeoPosition:
+  RunicInscriptionGeoPosition:
     description: Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
     type: object
     required:
+      - uri
       - current
     properties:
+      uri:
+        description: Persistent identifierare för runinskriften
+        example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
       current:
         $ref: '#/definitions/Geometry'
       orginal:
@@ -463,8 +467,8 @@ definitions:
     properties:
       id:
         description: Identitet för urvalsgruppen
-        example: 1
-        type: integer
+        example: b86b72cb-bc22-45fc-90cb-eaf213d3aaf9
+        type: string
       name:
         description: Namn på urvalsgruppen
         example: Socken
@@ -478,8 +482,8 @@ definitions:
     properties:
       id:
         description: Identitet för urvalet
-        example: 12
-        type: integer
+        example: c387aad1-9b4b-4c8c-ad0d-0bb4eaf605d6
+        type: string
       name:
         description: Namn på urval
         example: Bro
