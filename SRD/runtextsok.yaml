@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.6.0
+  version: 0.7.0
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -292,18 +292,55 @@ definitions:
     description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning i SRD
     type: object
     required:
-      - find
+      - query
     properties:
-      find:
+      query:
         description: Textsökfråga
         type: array
         items:
-          $ref: '#/definitions/TextQuery'
+          $ref: '#/definitions/TextQueryGroup'
       filter:
         description: Filtrering
         type: array
         items:
           $ref: '#/definitions/Selection'
+  TextQueryGroup:
+    description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
+    type: array
+    items:
+      $ref: '#/definitions/TextQuery'
+  TextQuery:
+    description: Sökfråga som används för att sätta villkor för textsökning i SRD
+    type: object
+    required:
+      - matching_text
+      - proper_name_search
+      - translation
+    properties:
+      logic_operator:
+        description: >-
+          Anger logisk operator för användas när flera sökfrågor kombineras. Första
+          frågan i en TextQueryGroup behöver inte ha en logisk operator
+        type: string
+        enum:
+          - AND
+          - OR
+          - NOT
+      matching_text:
+        description: Söktext
+        example: þaiR
+        type: string
+      proper_name_search:
+        description: Anger hur/om sökning skall ske i egennamn
+        type: string
+        enum:
+          - INCLUDE
+          - EXCLUDE
+          - ONLY
+      translation:
+        description: Anger i vilken översättning sökningen skall ske
+        example: 1
+        type: integer
   SearchResult:
     description: Resultat av en sökfråga
     type: object
@@ -411,36 +448,6 @@ definitions:
         $ref: '#/definitions/Geometry'
       orginal:
         $ref: '#/definitions/Geometry'
-  TextQuery:
-    description: Sökfråga som används för att sätta villkor för textsökning i SRD
-    type: object
-    required:
-      - matching_text
-      - proper_name_search
-      - language
-    properties:
-      operator:
-        description: >-
-          Anger operator för användas när flera sökfrågor kombineras. Första
-          frågan i en SearchQuery behöver inte ha en operator
-        type: string
-        enum:
-          - AND
-          - OR
-          - NOT
-      matching_text:
-        description: Söktext
-        type: string
-      proper_name_search:
-        description: Anger hur/om sökning skall ske i egennamn
-        type: string
-        enum:
-          - INCLUDE
-          - EXCLUDE
-          - ONLY
-      translation:
-        description: Anger i vilken översättning sökningen skall ske
-        type: integer
   SelectionGroup:
     description: 'Urvalsgrupp (tex socken, härrad eller kommun)'
     type: object
@@ -476,11 +483,11 @@ definitions:
     description: Kompletterande filter med urvalsgrupper
     type: object
     required:
-      - operator
+      - logic_operator
       - item
     properties:
-      operator:
-        description: Operator att användas när filter kombineras
+      logic_operator:
+        description: Logisk operator att användas när filter kombineras
         type: string
         enum:
           - AND
