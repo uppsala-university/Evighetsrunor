@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.7.0
+  version: 0.7.1
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -306,9 +306,14 @@ definitions:
           $ref: '#/definitions/Selection'
   TextQueryGroup:
     description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
-    type: array
-    items:
-      $ref: '#/definitions/TextQuery'
+    type: object
+    required:
+      - group
+    properties:
+      group:
+        type: array
+        items:
+          $ref: '#/definitions/TextQuery'
   TextQuery:
     description: Sökfråga som används för att sätta villkor för textsökning i SRD
     type: object
