@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.5.0
+  version: 0.6.0
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -44,7 +44,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Listor för enkel sökning
+        - Enkel sökning
   '/places/{matching_text}':
     get:
       summary: Hämtar lista med platser
@@ -78,7 +78,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Listor för enkel sökning
+        - Enkel sökning
   /selection/groups:
     get:
       summary: Hämtar lista med urvalsgrupper
@@ -108,7 +108,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Urval för filtrering av avancerad sökning
+        - Avancerad sökning
   '/selection/{group_id}/{matching_text}':
     get:
       summary: Hämtar lista med urval
@@ -157,7 +157,26 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Urval för filtrering av avancerad sökning
+        - Avancerad sökning
+  /translationtypes:
+    get:
+      summary: Hämtar alla översättningstyper
+      description: Översättningstyper att använda när en sökfråga sätts samman
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: (OK)  
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RunicTextTranslationType'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Avancerad sökning      
   /search:
     get:
       summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
@@ -190,7 +209,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Sökning
+        - Enkel sökning
     post:
       summary: Avancerad sökning i runtexter enligt sökvillkor
       description: >-
@@ -214,7 +233,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Sökning
+        - Avancerad sökning
   /map:
     get:
       summary: Hämtar alla geografiska punkter 
@@ -349,20 +368,39 @@ definitions:
     type: object
     required:
       - text
-      - language
+      - translation
     properties:
       text:
         description: Runtext
         example: ...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina
         type: string
-      language:
-        description: Typ/språk/normalisering för översättningen
+      translation:
+        $ref: '#/definitions/RunicTextTranslationType'
+  RunicTextTranslationType:
+    description: Översättningstyp, transliterering/normalisering/översättning av en runtext
+    type: object
+    required:
+      - id
+      - name
+      - proper_name_searchable
+      - is_complete
+    properties:
+      id:
+        description: Id för översättningstypen
+        example: 1
+        type: integer
+      name:
+        description: Namn på översättningstypen
+        example: Fornvästnordiska
         type: string
-        enum:
-          - RUNIC_TRANSLITERATION
-          - OLD_SCANDINAVIAN_NORMALISATION
-          - OLD_WEST_NORSE_NORMALISATION
-          - ENGLISH_TRANSLATION
+      proper_name_searchable:
+        description: Anger om texter av denna översättningstyp har sökbara egennamn
+        example: true
+        type: boolean
+      is_complete:
+        description: Anger om texter av denna översättningstyp är kompletta
+        example: true
+        type: boolean  
   GeoPosition:
     description: Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
     type: object
@@ -378,7 +416,7 @@ definitions:
     type: object
     required:
       - matching_text
-      - name
+      - proper_name_search
       - language
     properties:
       operator:
@@ -393,21 +431,16 @@ definitions:
       matching_text:
         description: Söktext
         type: string
-      name:
+      proper_name_search:
         description: Anger hur/om sökning skall ske i egennamn
         type: string
         enum:
           - INCLUDE
           - EXCLUDE
           - ONLY
-      language:
+      translation:
         description: Anger i vilken översättning sökningen skall ske
-        type: string
-        enum:
-          - LATIN_TRANSLITERATION_TRANSCRIPTION
-          - NATIONAL_IDIOM
-          - OLD_WEST_NORDIC
-          - ENGLISH
+        type: integer
   SelectionGroup:
     description: 'Urvalsgrupp (tex socken, härrad eller kommun)'
     type: object
