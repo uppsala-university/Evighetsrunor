@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.7.3
+  version: 0.7.4
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -308,9 +308,9 @@ definitions:
     description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
     type: object
     required:
-      - group
+      - condition
     properties:
-      logic_operator:
+      op:
         description: >-
           Anger logisk operator för användas när flera sökfrågor kombineras. Första
           frågan i en TextQueryGroup behöver inte ha en logisk operator
@@ -319,7 +319,7 @@ definitions:
           - AND
           - OR
           - NOT
-      group:
+      condition:
         type: array
         items:
           $ref: '#/definitions/TextQuery'
@@ -331,7 +331,7 @@ definitions:
       - proper_name_search
       - translation
     properties:
-      logic_operator:
+      op:
         description: >-
           Anger logisk operator för användas när flera sökfrågor kombineras. Första
           frågan i en TextQuery behöver inte ha en logisk operator
@@ -506,10 +506,10 @@ definitions:
     description: Kompletterande filter med urvalsgrupper
     type: object
     required:
-      - logic_operator
+      - op
       - item
     properties:
-      logic_operator:
+      op:
         description: Logisk operator att användas när filter kombineras
         type: string
         enum:
