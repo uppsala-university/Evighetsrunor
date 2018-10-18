@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.7.2
+  version: 0.7.3
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -310,6 +310,15 @@ definitions:
     required:
       - group
     properties:
+      logic_operator:
+        description: >-
+          Anger logisk operator för användas när flera sökfrågor kombineras. Första
+          frågan i en TextQueryGroup behöver inte ha en logisk operator
+        type: string
+        enum:
+          - AND
+          - OR
+          - NOT
       group:
         type: array
         items:
@@ -325,7 +334,7 @@ definitions:
       logic_operator:
         description: >-
           Anger logisk operator för användas när flera sökfrågor kombineras. Första
-          frågan i en TextQueryGroup behöver inte ha en logisk operator
+          frågan i en TextQuery behöver inte ha en logisk operator
         type: string
         enum:
           - AND
@@ -447,9 +456,14 @@ definitions:
     description: Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
     type: object
     required:
+      - signum
       - uri
       - current
     properties:
+      signum:
+        description: Signum
+        example: Öl 4 $
+        type: string
       uri:
         description: Persistent identifierare för runinskriften
         example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
