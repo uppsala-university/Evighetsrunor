@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.7.4
+  version: 0.7.5
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -169,6 +169,17 @@ paths:
           description: (OK)  
           schema:
             type: array
+            example:
+              - id: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+                name: Fornvästnordiska
+                proper_name_searchable: true
+                is_complete: true
+                method: NORMALISERING
+              - id: ca79d466-888f-4011-b5bd-35fc6dd1d623
+                name: Engelska
+                proper_name_searchable: false
+                is_complete: false  
+                method: OVERSATTNING
             items:
               $ref: '#/definitions/RunicTextTranslationType'
         '500':
@@ -435,6 +446,7 @@ definitions:
       - name
       - proper_name_searchable
       - is_complete
+      - method
     properties:
       id:
         description: Id för översättningstypen
@@ -451,7 +463,15 @@ definitions:
       is_complete:
         description: Anger om texter av denna översättningstyp är kompletta
         example: true
-        type: boolean  
+        type: boolean
+      method:
+        description: Anger översättningsmetod
+        example: NORMALISERING
+        type: string
+        enum:
+          - NORMALISERING
+          - TRANSLITERERING
+          - OVERSATTNING
   RunicInscriptionGeoPosition:
     description: Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
     type: object
