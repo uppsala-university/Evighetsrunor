@@ -1,2 +1,2 @@
-Swagger API-specifikation
-Öppna i swagger-editor/viewer: https://editor.swagger.io/
+# Swagger API-specifikation
+Ã–ppna i swagger-editor/viewer: https://editor.swagger.io/
