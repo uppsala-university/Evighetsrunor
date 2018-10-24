@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.7.5
+  version: 0.7.6
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -418,6 +418,11 @@ definitions:
         example: >-
           https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
         type: string
+      last_update_time:
+        type: string
+        example: '2018-01-07T13:00:60Z'
+        format: dateTime
+        description: Anger tidpunkten när senaste uppdatering av informationen om denna runinskrift gjorts
       translation:
         description: Översättning av runtext
         type: array
@@ -614,7 +619,7 @@ definitions:
         description: Anger den resourcepath där felet uppstod
       timestamp:
         type: string
-        example: '1990-12-31T23:59:60Z'
+        example: '2019-01-04T23:59:60Z'
         format: dateTime
         description: >-
           Anger tidpunkten när felet inträffade. Tidpunkt angiven som date-time,
