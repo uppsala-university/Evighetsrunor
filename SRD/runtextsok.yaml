@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.7.6
+  version: 0.8.1
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -14,13 +14,18 @@ schemes:
   - https
 basePath: /evighetsrunor/api/v1
 paths:
-  '/signums/{matching_text}':
+  '/signums/{edition_id}/{matching_text}':
     get:
       summary: Hämtar lista med signum
       description: >-
         Hämta en lista med signum som kan användas vid enkel sökning (typeahead)
         på signum
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
         - name: matching_text
           in: path
           required: true
@@ -45,13 +50,18 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Enkel sökning
-  '/places/{matching_text}':
+  '/places/{edition_id}/{matching_text}':
     get:
       summary: Hämtar lista med platser
       description: >-
         Hämta en lista med platser som kan användas vid enkel sökning
         (typeahead) på plats
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
         - name: matching_text
           in: path
           required: true
@@ -79,7 +89,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Enkel sökning
-  /selection/groups:
+  /selection/{edition_id}/groups:
     get:
       summary: Hämtar lista med urvalsgrupper
       description: >-
@@ -87,6 +97,12 @@ paths:
         för en avancerad sökning
       produces:
         - application/json
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
       responses:
         '200':
           description: En lista med urvalsgrupper
@@ -109,7 +125,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  '/selection/{group_id}/{matching_text}':
+  '/selection/{edition_id}/{group_id}/{matching_text}':
     get:
       summary: Hämtar lista med urval
       description: >-
@@ -118,6 +134,11 @@ paths:
       produces:
         - application/json
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: group_id
           in: path
           required: true
@@ -158,12 +179,18 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  /translationtypes:
+  /translationtypes/{edition_id}:
     get:
       summary: Hämtar alla översättningstyper
       description: Översättningstyper att använda när en sökfråga sätts samman
       produces:
         - application/json
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
       responses:
         '200':
           description: (OK)  
@@ -188,13 +215,18 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning      
-  /search:
+  /search/{edition_id}:
     get:
       summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
       description: Söker efter runtexter med del av plats eller signum
       produces:
         - application/json
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: matching_text
           in: query
           required: true
@@ -227,6 +259,11 @@ paths:
         Sök i runtexter enligt kombinerade sökvillkor för text samt filtrering
         enligt urval
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: query
           in: body
           required: true
@@ -245,12 +282,18 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  /map:
+  /map/{edition_id}:
     get:
       summary: Hämtar alla geografiska punkter 
       description: Hämtar alla geografiska punkter där runinskriptioner finns eller har hittats
       produces:
         - application/json
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
       responses:
         '200':
           description: (OK). Poster hittades
@@ -265,13 +308,18 @@ paths:
       tags:
         - Karta  
   
-  '/inscription/{id}':
+  '/inscription/{edition_id}/{id}':
     get:
       summary: Hämtar en runinskrift med hjälp av signum eller URI
       description: Hämtar en runinskrift med hjälp av signum eller URI
       produces:
         - application/json
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: id
           in: path
           required: true
@@ -297,8 +345,90 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Entiteter
+        - Runtexter
+  '/editions':
+    get:
+      summary: Hämtar en lista med utgåvor
+      description: Hämtar en lista med utgåvor
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: (OK). Poster hittades
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Edition'
+        '404':
+          description: (Not found). Ingen träff
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              status: 404
+              message: Utgåvor saknas
+              path: /editions
+              timestamp: '2001-12-31T23:59:60Z'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Utgåva
+  '/editions/{edition_id}/download':
+    get:
+      summary: Hämtar all data i en utgåva
+      description: "Hämtar en fil som innehåller all data i en utgåva av SRD. TODO: bestämma format"
+      produces:
+        - application/octet-stream
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
+      responses:
+        '200':
+          description: (OK). Poster hittades
+        '404':
+          description: (Not found). Ingen träff
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              status: 404
+              message: Utgåva saknas
+              path: /editions/1987
+              timestamp: '2018-12-31T23:59:60Z'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Utgåva      
 definitions:
+  Edition:
+    description: En utgåva (version) av SRD
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        description: Identitet på utgåvan
+        type: string
+        example: "2018"
+      name:
+        description: Namn på utgåvan
+        type: string
+        example: 2018 års utgåva av Samnordisk runtextdatabas
+      latest:
+        description: Anger om utgåvan är den aktuella (senast utgivna)
+        type: boolean
+        example: true
+      download:
+        description: Anger URL för att ladda ner all data i en utgåva
+        type: string
+        example: /editions/2018/download
   SearchQuery:
     description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning i SRD
     type: object
