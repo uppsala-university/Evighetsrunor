@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.5.0
+  version: 0.8.1
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -14,13 +14,18 @@ schemes:
   - https
 basePath: /evighetsrunor/api/v1
 paths:
-  '/signums/{matching_text}':
+  '/signums/{edition_id}/{matching_text}':
     get:
       summary: Hämtar lista med signum
       description: >-
         Hämta en lista med signum som kan användas vid enkel sökning (typeahead)
         på signum
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
         - name: matching_text
           in: path
           required: true
@@ -44,14 +49,19 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Listor för enkel sökning
-  '/places/{matching_text}':
+        - Enkel sökning
+  '/places/{edition_id}/{matching_text}':
     get:
       summary: Hämtar lista med platser
       description: >-
         Hämta en lista med platser som kan användas vid enkel sökning
         (typeahead) på plats
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
         - name: matching_text
           in: path
           required: true
@@ -65,11 +75,11 @@ paths:
           schema:
             type: array
             example:
-              - id: 12
+              - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
                 name: Abrahamstorp
-              - id: 13
+              - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
                 name: Ackarby
-              - id: 14
+              - id: b70ec612-cef6-446d-afc0-4e3387804842
                 name: ...
             items:
               $ref: '#/definitions/SelectionItem'
@@ -78,8 +88,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Listor för enkel sökning
-  /selection/groups:
+        - Enkel sökning
+  /selection/{edition_id}/groups:
     get:
       summary: Hämtar lista med urvalsgrupper
       description: >-
@@ -87,19 +97,25 @@ paths:
         för en avancerad sökning
       produces:
         - application/json
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
       responses:
         '200':
           description: En lista med urvalsgrupper
           schema:
             type: array
             example:
-              - id: 1
+              - id: 161ab23e-7566-43a0-9dbe-c7f237f27765
                 name: Plats
-              - id: 2
+              - id: d3c41141-ef42-4ef3-9cbb-3d49fa6acffe
                 name: Socken
-              - id: 3
+              - id: 30ba8d99-f27b-48fc-8048-7892eb3a0fbc
                 name: Härrad
-              - id: 4
+              - id: b95dc24b-a1f6-4310-8a9e-3d0264f0f53e
                 name: ...
             items:
               $ref: '#/definitions/SelectionGroup'
@@ -108,8 +124,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Urval för filtrering av avancerad sökning
-  '/selection/{group_id}/{matching_text}':
+        - Avancerad sökning
+  '/selection/{edition_id}/{group_id}/{matching_text}':
     get:
       summary: Hämtar lista med urval
       description: >-
@@ -118,10 +134,15 @@ paths:
       produces:
         - application/json
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: group_id
           in: path
           required: true
-          type: integer
+          type: string
           description: Id för urvalsgrupp
         - name: matching_text
           in: path
@@ -134,11 +155,11 @@ paths:
           schema:
             type: array
             example:
-              - id: 12
+              - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
                 name: Abrahamstorp
-              - id: 13
+              - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
                 name: Ackarby
-              - id: 14
+              - id: b70ec612-cef6-446d-afc0-4e3387804842
                 name: ...
             items:
               $ref: '#/definitions/SelectionItem'
@@ -157,14 +178,55 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Urval för filtrering av avancerad sökning
-  /search:
+        - Avancerad sökning
+  /translationtypes/{edition_id}:
+    get:
+      summary: Hämtar alla översättningstyper
+      description: Översättningstyper att använda när en sökfråga sätts samman
+      produces:
+        - application/json
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
+      responses:
+        '200':
+          description: (OK)  
+          schema:
+            type: array
+            example:
+              - id: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+                name: Fornvästnordiska
+                proper_name_searchable: true
+                is_complete: true
+                method: NORMALISERING
+              - id: ca79d466-888f-4011-b5bd-35fc6dd1d623
+                name: Engelska
+                proper_name_searchable: false
+                is_complete: false  
+                method: OVERSATTNING
+            items:
+              $ref: '#/definitions/RunicTextTranslationType'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Avancerad sökning      
+  /search/{edition_id}:
     get:
       summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
       description: Söker efter runtexter med del av plats eller signum
       produces:
         - application/json
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: matching_text
           in: query
           required: true
@@ -190,13 +252,18 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Sökning
+        - Enkel sökning
     post:
       summary: Avancerad sökning i runtexter enligt sökvillkor
       description: >-
         Sök i runtexter enligt kombinerade sökvillkor för text samt filtrering
         enligt urval
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: query
           in: body
           required: true
@@ -214,20 +281,26 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Sökning
-  /map:
+        - Avancerad sökning
+  /map/{edition_id}:
     get:
       summary: Hämtar alla geografiska punkter 
       description: Hämtar alla geografiska punkter där runinskriptioner finns eller har hittats
       produces:
         - application/json
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
       responses:
         '200':
           description: (OK). Poster hittades
           schema:
             type: array
             items:
-              $ref: '#/definitions/GeoPosition'
+              $ref: '#/definitions/RunicInscriptionGeoPosition'
         '500':
           description: (Internal server error). Ett oväntat fel inträffade.
           schema:
@@ -235,13 +308,18 @@ paths:
       tags:
         - Karta  
   
-  '/inscription/{id}':
+  '/inscription/{edition_id}/{id}':
     get:
       summary: Hämtar en runinskrift med hjälp av signum eller URI
       description: Hämtar en runinskrift med hjälp av signum eller URI
       produces:
         - application/json
       parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva
         - name: id
           in: path
           required: true
@@ -267,24 +345,157 @@ paths:
           schema:
             $ref: '#/definitions/Error'
       tags:
-        - Entiteter
+        - Runtexter
+  '/editions':
+    get:
+      summary: Hämtar en lista med utgåvor
+      description: Hämtar en lista med utgåvor
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: (OK). Poster hittades
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Edition'
+        '404':
+          description: (Not found). Ingen träff
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              status: 404
+              message: Utgåvor saknas
+              path: /editions
+              timestamp: '2001-12-31T23:59:60Z'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Utgåva
+  '/editions/{edition_id}/download':
+    get:
+      summary: Hämtar all data i en utgåva
+      description: "Hämtar en fil som innehåller all data i en utgåva av SRD. TODO: bestämma format"
+      produces:
+        - application/octet-stream
+      parameters:
+        - name: edition_id
+          in: path
+          required: true
+          type: string
+          description: Id för önskad utgåva  
+      responses:
+        '200':
+          description: (OK). Poster hittades
+        '404':
+          description: (Not found). Ingen träff
+          schema:
+            $ref: '#/definitions/Error'
+          examples:
+            application/json:
+              status: 404
+              message: Utgåva saknas
+              path: /editions/1987
+              timestamp: '2018-12-31T23:59:60Z'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          schema:
+            $ref: '#/definitions/Error'
+      tags:
+        - Utgåva      
 definitions:
+  Edition:
+    description: En utgåva (version) av SRD
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        description: Identitet på utgåvan
+        type: string
+        example: "2018"
+      name:
+        description: Namn på utgåvan
+        type: string
+        example: 2018 års utgåva av Samnordisk runtextdatabas
+      latest:
+        description: Anger om utgåvan är den aktuella (senast utgivna)
+        type: boolean
+        example: true
+      download:
+        description: Anger URL för att ladda ner all data i en utgåva
+        type: string
+        example: /editions/2018/download
   SearchQuery:
     description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning i SRD
     type: object
     required:
-      - find
+      - query
     properties:
-      find:
+      query:
         description: Textsökfråga
         type: array
         items:
-          $ref: '#/definitions/TextQuery'
+          $ref: '#/definitions/TextQueryGroup'
       filter:
         description: Filtrering
         type: array
         items:
           $ref: '#/definitions/Selection'
+  TextQueryGroup:
+    description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
+    type: object
+    required:
+      - condition
+    properties:
+      op:
+        description: >-
+          Anger logisk operator för användas när flera sökfrågor kombineras. Första
+          frågan i en TextQueryGroup behöver inte ha en logisk operator
+        type: string
+        enum:
+          - AND
+          - OR
+          - NOT
+      condition:
+        type: array
+        items:
+          $ref: '#/definitions/TextQuery'
+  TextQuery:
+    description: Sökfråga som används för att sätta villkor för textsökning i SRD
+    type: object
+    required:
+      - matching_text
+      - proper_name_search
+      - translation
+    properties:
+      op:
+        description: >-
+          Anger logisk operator för användas när flera sökfrågor kombineras. Första
+          frågan i en TextQuery behöver inte ha en logisk operator
+        type: string
+        enum:
+          - AND
+          - OR
+          - NOT
+      matching_text:
+        description: Söktext
+        example: þaiR
+        type: string
+      proper_name_search:
+        description: Anger hur/om sökning skall ske i egennamn
+        type: string
+        enum:
+          - INCLUDE
+          - EXCLUDE
+          - ONLY
+      translation_type_id:
+        description: Anger i vilken översättning sökningen skall ske
+        example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+        type: string
   SearchResult:
     description: Resultat av en sökfråga
     type: object
@@ -337,77 +548,84 @@ definitions:
         example: >-
           https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
         type: string
+      last_update_time:
+        type: string
+        example: '2018-01-07T13:00:60Z'
+        format: dateTime
+        description: Anger tidpunkten när senaste uppdatering av informationen om denna runinskrift gjorts
       translation:
         description: Översättning av runtext
         type: array
         items:
           $ref: '#/definitions/RunicTextTranslation'
       position:
-        $ref: '#/definitions/GeoPosition'
+        $ref: '#/definitions/RunicInscriptionGeoPosition'
   RunicTextTranslation:
     description: En transliterering/normalisering/översättning av en runtext
     type: object
     required:
       - text
-      - language
+      - translation
     properties:
       text:
         description: Runtext
         example: ...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina
         type: string
-      language:
-        description: Typ/språk/normalisering för översättningen
+      translation_type:
+        $ref: '#/definitions/RunicTextTranslationType'
+  RunicTextTranslationType:
+    description: Översättningstyp, transliterering/normalisering/översättning av en runtext
+    type: object
+    required:
+      - id
+      - name
+      - proper_name_searchable
+      - is_complete
+      - method
+    properties:
+      id:
+        description: Id för översättningstypen
+        example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+        type: string
+      name:
+        description: Namn på översättningstypen
+        example: Fornvästnordiska
+        type: string
+      proper_name_searchable:
+        description: Anger om texter av denna översättningstyp har sökbara egennamn
+        example: true
+        type: boolean
+      is_complete:
+        description: Anger om texter av denna översättningstyp är kompletta
+        example: true
+        type: boolean
+      method:
+        description: Anger översättningsmetod
+        example: NORMALISERING
         type: string
         enum:
-          - RUNIC_TRANSLITERATION
-          - OLD_SCANDINAVIAN_NORMALISATION
-          - OLD_WEST_NORSE_NORMALISATION
-          - ENGLISH_TRANSLATION
-  GeoPosition:
+          - NORMALISERING
+          - TRANSLITERERING
+          - OVERSATTNING
+  RunicInscriptionGeoPosition:
     description: Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
     type: object
     required:
+      - signum
+      - uri
       - current
     properties:
+      signum:
+        description: Signum
+        example: Öl 4 $
+        type: string
+      uri:
+        description: Persistent identifierare för runinskriften
+        example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
       current:
         $ref: '#/definitions/Geometry'
       orginal:
         $ref: '#/definitions/Geometry'
-  TextQuery:
-    description: Sökfråga som används för att sätta villkor för textsökning i SRD
-    type: object
-    required:
-      - matching_text
-      - name
-      - language
-    properties:
-      operator:
-        description: >-
-          Anger operator för användas när flera sökfrågor kombineras. Första
-          frågan i en SearchQuery behöver inte ha en operator
-        type: string
-        enum:
-          - AND
-          - OR
-          - NOT
-      matching_text:
-        description: Söktext
-        type: string
-      name:
-        description: Anger hur/om sökning skall ske i egennamn
-        type: string
-        enum:
-          - INCLUDE
-          - EXCLUDE
-          - ONLY
-      language:
-        description: Anger i vilken översättning sökningen skall ske
-        type: string
-        enum:
-          - LATIN_TRANSLITERATION_TRANSCRIPTION
-          - NATIONAL_IDIOM
-          - OLD_WEST_NORDIC
-          - ENGLISH
   SelectionGroup:
     description: 'Urvalsgrupp (tex socken, härrad eller kommun)'
     type: object
@@ -418,8 +636,8 @@ definitions:
     properties:
       id:
         description: Identitet för urvalsgruppen
-        example: 1
-        type: integer
+        example: b86b72cb-bc22-45fc-90cb-eaf213d3aaf9
+        type: string
       name:
         description: Namn på urvalsgruppen
         example: Socken
@@ -433,8 +651,8 @@ definitions:
     properties:
       id:
         description: Identitet för urvalet
-        example: 12
-        type: integer
+        example: c387aad1-9b4b-4c8c-ad0d-0bb4eaf605d6
+        type: string
       name:
         description: Namn på urval
         example: Bro
@@ -443,11 +661,11 @@ definitions:
     description: Kompletterande filter med urvalsgrupper
     type: object
     required:
-      - operator
+      - op
       - item
     properties:
-      operator:
-        description: Operator att användas när filter kombineras
+      op:
+        description: Logisk operator att användas när filter kombineras
         type: string
         enum:
           - AND
@@ -531,7 +749,7 @@ definitions:
         description: Anger den resourcepath där felet uppstod
       timestamp:
         type: string
-        example: '1990-12-31T23:59:60Z'
+        example: '2019-01-04T23:59:60Z'
         format: dateTime
         description: >-
           Anger tidpunkten när felet inträffade. Tidpunkt angiven som date-time,
