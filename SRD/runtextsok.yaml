@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.8.1
+  version: 0.9.1
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -14,7 +14,7 @@ schemes:
   - https
 basePath: /evighetsrunor/api/v1
 paths:
-  '/signums/{edition_id}/{matching_text}':
+  /signums:
     get:
       summary: Hämtar lista med signum
       description: >-
@@ -22,13 +22,13 @@ paths:
         på signum
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva  
         - name: matching_text
-          in: path
-          required: true
+          in: query
+          required: false
           type: string
           description: Del av signum att matcha mot
       produces:
@@ -50,7 +50,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Enkel sökning
-  '/places/{edition_id}/{matching_text}':
+  /places:
     get:
       summary: Hämtar lista med platser
       description: >-
@@ -58,13 +58,13 @@ paths:
         (typeahead) på plats
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva  
         - name: matching_text
-          in: path
-          required: true
+          in: query
+          required: false
           type: string
           description: Del av namn på plats att matcha mot
       produces:
@@ -89,7 +89,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Enkel sökning
-  /selection/{edition_id}/groups:
+  /selection/groups:
     get:
       summary: Hämtar lista med urvalsgrupper
       description: >-
@@ -99,7 +99,7 @@ paths:
         - application/json
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva  
@@ -125,7 +125,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  '/selection/{edition_id}/{group_id}/{matching_text}':
+  /selection/groups/{group_id}:
     get:
       summary: Hämtar lista med urval
       description: >-
@@ -135,7 +135,7 @@ paths:
         - application/json
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva
@@ -145,8 +145,8 @@ paths:
           type: string
           description: Id för urvalsgrupp
         - name: matching_text
-          in: path
-          required: true
+          in: query
+          required: false
           type: string
           description: Del av namn på urval att matcha mot
       responses:
@@ -179,7 +179,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  /translationtypes/{edition_id}:
+  /translationtypes:
     get:
       summary: Hämtar alla översättningstyper
       description: Översättningstyper att använda när en sökfråga sätts samman
@@ -187,7 +187,7 @@ paths:
         - application/json
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva  
@@ -215,7 +215,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning      
-  /search/{edition_id}:
+  /search:
     get:
       summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
       description: Söker efter runtexter med del av plats eller signum
@@ -223,7 +223,7 @@ paths:
         - application/json
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva
@@ -282,7 +282,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  /map/{edition_id}:
+  /map:
     get:
       summary: Hämtar alla geografiska punkter 
       description: Hämtar alla geografiska punkter där runinskriptioner finns eller har hittats
@@ -290,7 +290,7 @@ paths:
         - application/json
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva  
@@ -308,7 +308,42 @@ paths:
       tags:
         - Karta  
   
-  '/inscription/{edition_id}/{id}':
+  /inscriptions:
+    get:
+      summary: Hämtar en lista med runinskrifter 
+      description: Hämtar en lista med runinskrifter för en viss utgåva
+      produces:
+        - application/json
+      parameters:
+        - name: edition_id
+          in: query
+          required: true
+          type: string
+          description: Id för önskad utgåva
+      responses:
+          '200':
+            description: (OK). Post hittades
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/RunicInscription'
+          '404':
+            description: (Not found). Ingen träff
+            schema:
+              $ref: '#/definitions/Error'
+            examples:
+              application/json:
+                status: 404
+                message: Signum eller URI saknas
+                path: /selection/12/test
+                timestamp: '1990-12-31T23:59:60Z'
+          '500':
+            description: (Internal server error). Ett oväntat fel inträffade.
+            schema:
+              $ref: '#/definitions/Error'
+      tags:
+        - Runtexter      
+  /inscriptions/{id}:
     get:
       summary: Hämtar en runinskrift med hjälp av signum eller URI
       description: Hämtar en runinskrift med hjälp av signum eller URI
@@ -316,7 +351,7 @@ paths:
         - application/json
       parameters:
         - name: edition_id
-          in: path
+          in: query
           required: true
           type: string
           description: Id för önskad utgåva
@@ -627,7 +662,7 @@ definitions:
       orginal:
         $ref: '#/definitions/Geometry'
   SelectionGroup:
-    description: 'Urvalsgrupp (tex socken, härrad eller kommun)'
+    description: 'Urvalsgrupp (tex Föremål, Korsform, Material etc)'
     type: object
     required:
       - id
