@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: 0.8.1
+  version: 0.9.2
   title: Samnordisk runtextdatabas söktjänst API
   description: >-
     Samnordisk runtextdatabas (SRD) söktjänst API. Specification för
@@ -14,57 +14,46 @@ schemes:
   - https
 basePath: /evighetsrunor/api/v1
 paths:
-  '/signums/{edition_id}/{matching_text}':
+  /signums:
     get:
       summary: Hämtar lista med signum
       description: >-
         Hämta en lista med signum som kan användas vid enkel sökning (typeahead)
         på signum
       parameters:
-        - name: edition_id
-          in: path
-          required: true
-          type: string
-          description: Id för önskad utgåva  
+        - $ref: '#/parameters/editionParameter'
         - name: matching_text
-          in: path
-          required: true
+          in: query
+          required: false
           type: string
           description: Del av signum att matcha mot
+        - $ref: '#/parameters/pageParameter'
+        - $ref: '#/parameters/sizeParameter'
+        - $ref: '#/parameters/sortParameter'  
       produces:
         - application/json
       responses:
         '200':
           description: En lista med signum
           schema:
-            type: array
-            example:
-              - Öl 4 $
-              - Öl Fv1911;274 B $
-              - ...
-            items:
-              type: string
+            $ref: '#/definitions/PagedSignumResponse'
         '500':
           description: (Internal server error). Ett oväntat fel inträffade.
           schema:
             $ref: '#/definitions/Error'
       tags:
         - Enkel sökning
-  '/places/{edition_id}/{matching_text}':
+  /places:
     get:
       summary: Hämtar lista med platser
       description: >-
         Hämta en lista med platser som kan användas vid enkel sökning
         (typeahead) på plats
       parameters:
-        - name: edition_id
-          in: path
-          required: true
-          type: string
-          description: Id för önskad utgåva  
+        - $ref: '#/parameters/editionParameter'
         - name: matching_text
-          in: path
-          required: true
+          in: query
+          required: false
           type: string
           description: Del av namn på plats att matcha mot
       produces:
@@ -89,7 +78,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Enkel sökning
-  /selection/{edition_id}/groups:
+  /selection/groups:
     get:
       summary: Hämtar lista med urvalsgrupper
       description: >-
@@ -98,11 +87,7 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: edition_id
-          in: path
-          required: true
-          type: string
-          description: Id för önskad utgåva  
+        - $ref: '#/parameters/editionParameter'
       responses:
         '200':
           description: En lista med urvalsgrupper
@@ -125,7 +110,7 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  '/selection/{edition_id}/{group_id}/{matching_text}':
+  /selection/groups/{group_id}:
     get:
       summary: Hämtar lista med urval
       description: >-
@@ -134,19 +119,15 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: edition_id
-          in: path
-          required: true
-          type: string
-          description: Id för önskad utgåva
+        - $ref: '#/parameters/editionParameter'
         - name: group_id
           in: path
           required: true
           type: string
           description: Id för urvalsgrupp
         - name: matching_text
-          in: path
-          required: true
+          in: query
+          required: false
           type: string
           description: Del av namn på urval att matcha mot
       responses:
@@ -179,18 +160,14 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  /translationtypes/{edition_id}:
+  /translationtypes:
     get:
       summary: Hämtar alla översättningstyper
       description: Översättningstyper att använda när en sökfråga sätts samman
       produces:
         - application/json
       parameters:
-        - name: edition_id
-          in: path
-          required: true
-          type: string
-          description: Id för önskad utgåva  
+        - $ref: '#/parameters/editionParameter'
       responses:
         '200':
           description: (OK)  
@@ -215,18 +192,14 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning      
-  /search/{edition_id}:
+  /search:
     get:
       summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
       description: Söker efter runtexter med del av plats eller signum
       produces:
         - application/json
       parameters:
-        - name: edition_id
-          in: path
-          required: true
-          type: string
-          description: Id för önskad utgåva
+        - $ref: '#/parameters/editionParameter'
         - name: matching_text
           in: query
           required: true
@@ -282,18 +255,24 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Avancerad sökning
-  /map/{edition_id}:
+  /map:
     get:
       summary: Hämtar alla geografiska punkter 
       description: Hämtar alla geografiska punkter där runinskriptioner finns eller har hittats
       produces:
         - application/json
       parameters:
-        - name: edition_id
-          in: path
+        - $ref: '#/parameters/editionParameter'
+        - in: query
+          name: bbox
           required: true
           type: string
-          description: Id för önskad utgåva  
+          description: >
+            Anger koordinater i kommaseparerad lista för spatial utsökning i
+            bboxformat; left,top,bottom,right. Exempel 688232.203,6332689.351,713304.203,6345041.351
+            Koordinatsystem antas vara ?. 
+            TODO Vilket koordinatsystem skall vi använda? SR-ORG:7483 EPSG:3857 --
+            WGS84 Web Mercator (Auxiliary Sphere) för att visa på Google-maps?
       responses:
         '200':
           description: (OK). Poster hittades
@@ -307,19 +286,48 @@ paths:
             $ref: '#/definitions/Error'
       tags:
         - Karta  
-  
-  '/inscription/{edition_id}/{id}':
+  /inscriptions:
+    get:
+      summary: Hämtar en lista med runinskrifter 
+      description: Hämtar en lista med runinskrifter för en viss utgåva
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/editionParameter'
+        - $ref: '#/parameters/pageParameter'
+        - $ref: '#/parameters/sizeParameter'
+        - $ref: '#/parameters/sortParameter'
+      responses:
+          '200':
+            description: (OK). Post hittades
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/PagedRunicInscriptionResponse'
+          '404':
+            description: (Not found). Ingen träff
+            schema:
+              $ref: '#/definitions/Error'
+            examples:
+              application/json:
+                status: 404
+                message: Signum eller URI saknas
+                path: /selection/12/test
+                timestamp: '1990-12-31T23:59:60Z'
+          '500':
+            description: (Internal server error). Ett oväntat fel inträffade.
+            schema:
+              $ref: '#/definitions/Error'
+      tags:
+        - Runtexter      
+  /inscriptions/{id}:
     get:
       summary: Hämtar en runinskrift med hjälp av signum eller URI
       description: Hämtar en runinskrift med hjälp av signum eller URI
       produces:
         - application/json
       parameters:
-        - name: edition_id
-          in: path
-          required: true
-          type: string
-          description: Id för önskad utgåva
+        - $ref: '#/parameters/editionParameter'
         - name: id
           in: path
           required: true
@@ -516,6 +524,92 @@ definitions:
           - 6
         items:
           type: integer
+  PagedSignumResponse:
+    description: Paginerat svar med signum
+    type: object
+    properties:
+      signum:
+        description: Lista med signum
+        type: array
+        example:
+          - Öl 4 $
+          - Öl Fv1911;274 B $
+          - ...
+        items:
+          type: string
+      totalpages:
+        description: Totalt antal sidor som kan hämtas
+        type: integer
+        example: 84
+      totalElements:
+        description: Totalt antal objekt som kan hämtas
+        type: integer
+        example: 8345
+      last:
+        description: Anger om aktuell sida är den sista
+        type: boolean
+        example: false
+      sort:
+        description: Anger vilken sortering som använts
+        type: string
+        example: sort=id
+      first:
+        description: Anger om aktuell sida är den första
+        type: boolean
+        example: true
+      numberOfElements:
+        description: Antal objekt i aktuellt svar
+        type: integer
+        example: 100
+      size:
+        description: Anger antal objekt per sida
+        type: integer
+        example: 100
+      number:
+        description: Sidnummer
+        type: integer
+        example: 0
+  PagedRunicInscriptionResponse:
+    description: Paginerat svar med runinskription
+    type: object
+    properties:
+      content:
+        description: Runinskrifter
+        type: array
+        items:
+          $ref: '#/definitions/RunicInscription'
+      totalpages:
+        description: Totalt antal sidor som kan hämtas
+        type: integer
+        example: 84
+      totalElements:
+        description: Totalt antal objekt som kan hämtas
+        type: integer
+        example: 8345
+      last:
+        description: Anger om aktuell sida är den sista
+        type: boolean
+        example: false
+      sort:
+        description: Anger vilken sortering som använts
+        type: string
+        example: sort=id
+      first:
+        description: Anger om aktuell sida är den första
+        type: boolean
+        example: true
+      numberOfElements:
+        description: Antal objekt i aktuellt svar
+        type: integer
+        example: 100
+      size:
+        description: Anger antal objekt per sida
+        type: integer
+        example: 100
+      number:
+        description: Sidnummer
+        type: integer
+        example: 0
   RunicInscription:
     description: Grundinformation för en runinskription
     type: object
@@ -627,7 +721,7 @@ definitions:
       orginal:
         $ref: '#/definitions/Geometry'
   SelectionGroup:
-    description: 'Urvalsgrupp (tex socken, härrad eller kommun)'
+    description: 'Urvalsgrupp (tex Föremål, Korsform, Material etc)'
     type: object
     required:
       - id
@@ -754,3 +848,31 @@ definitions:
         description: >-
           Anger tidpunkten när felet inträffade. Tidpunkt angiven som date-time,
           se RFC3339 (Internet Date/Time Format)
+parameters:
+  editionParameter:
+    name: edition_id
+    in: query
+    description: Id för önskad utgåva
+    required: true
+    type: string
+  pageParameter:
+    name: page
+    in: query
+    description: Index för önskad resultatsida
+    required: false
+    type: number
+    format: number
+  sizeParameter:
+    name: size
+    in: query
+    description: Storlek på sidor
+    required: false
+    type: number
+    format: number
+  sortParameter:
+    name: sort
+    in: query
+    description: Attribut som man vill använda föra att sortera svaret, tex "sort=id", eller "sort=id,desc" om man vill ha svaret i fallande ordning.
+    required: false
+    type: string
+    format: sort
