@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-SAMSÖK
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.3
+  version: 0.9.4
 servers:
   - description: Uppsala Universitet Evighetsrunor API - TEST
     url: http://runor.test.uu.se/rest/
@@ -337,7 +337,8 @@ paths:
         - name: bbox
           in: query
           description: |
-            Anger koordinater i kommaseparerad lista för spatial utsökning i bboxformat; left,top,bottom,right. Exempel 688232.203,6332689.351,713304.203,6345041.351 Koordinatsystem antas vara ?.  TODO Vilket koordinatsystem skall vi använda? SR-ORG:7483 EPSG:3857 -- WGS84 Web Mercator (Auxiliary Sphere) för att visa på Google-maps?
+            Anger koordinater i kommaseparerad lista för spatial utsökning i bboxformat; left,top,bottom,right.
+            Exempel 688232.203,6332689.351,713304.203,6345041.351 Koordinatsystem för geometrier förväntas vara WGS84 (EPSG:4326).
           required: true
           schema:
             type: string
@@ -531,31 +532,31 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   /echo/{message}:
-      get:
-        summary: Tjänst avsedd för att utföra sambandstest. Tjänsten returnerar det argument soma angavs som inparameter i anropet.
-        parameters:
-          - in: path
-            name: message
-            description: Värdet för det 'eko' som ska returneras tillbaka till klienten.
-            required: true
-            schema:
-              type: string
-              example: "Hurra! Anropet lyckades."
-        responses:
-          '200':
-            description: (OK). Ett json-objekt med attributet 'echo' returneras.
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Echo'
-          '500':
-            description: (Internal server error). Ett oväntat fel inträffade.
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Error'
-        tags:
-          - Övriga tjänster
+    get:
+      summary: Tjänst avsedd för att utföra sambandstest. Tjänsten returnerar det argument soma angavs som inparameter i anropet.
+      parameters:
+        - in: path
+          name: message
+          description: Värdet för det 'eko' som ska returneras tillbaka till klienten.
+          required: true
+          schema:
+            type: string
+            example: "Hurra! Anropet lyckades."
+      responses:
+        '200':
+          description: (OK). Ett json-objekt med attributet 'echo' returneras.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Echo'
+        '500':
+          description: (Internal server error). Ett oväntat fel inträffade.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - Övriga tjänster
 components:
   schemas:
     Echo:
@@ -676,14 +677,16 @@ components:
       type: object
       properties:
         signum:
+          description: Innehåller lista av framsökta signum.
           type: array
-          description: Lista med signum
+          items:
+            type: string
           example:
             - Öl 4 $
             - Öl Fv1911;274 B $
             - '...'
-          items:
-            type: string
+        #          items:
+        #            $ref: '#/components/schemas/Signum'
         totalpages:
           type: integer
           description: Totalt antal sidor som kan hämtas
@@ -758,50 +761,151 @@ components:
           description: Sidnummer
           example: 0
       description: Paginerat svar med runinskription
+
     RunicInscription:
+      description: Grundinformation för en runinskription
       required:
         - signum
         - translation
         - uri
       type: object
       properties:
-        signum:
-          type: string
-          description: Signum
-          example: Öl 4 $
-        alt_signum:
-          type: array
-          description: Alternativt signum
-          example:
-            - B 1063
-            - L 1318
-            - '...'
-          items:
-            type: string
         uri:
           type: string
           description: Persistent identifierare för runinskriften (används för att
             hämta information från K-SAMSÖK)
           example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
         object_uri:
-          type: string
           description: Persistent identifierare för bärare av runinskriften (används
             för att hämta information från K-SAMSÖK)
-          example: https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
-        last_update_time:
           type: string
-          description: Anger tidpunkten när senaste uppdatering av informationen om
-            denna runinskrift gjorts
-          format: dateTime
-          example: 2018-01-07T13:00:60Z
-        translation:
+          example: https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
+        signum:
+          description: Anger ett sammansatt signum bestående av "signum1 signum2".
+          type: string
+          example: Öl 10
+        signum1:
+          description: Anger den första identitetsdelen för runinskriften, s.k signum.
+            Platsbaserad. Oftast landskapskoden där runstenen hittades. Sätts samman med attribut 'signum 2'
+          type: string
+          example: Öl
+        signum2:
+          description: Anger den andra identitetssdelen för runinskriften, s.k signum.
+            Anger oftast runinskriftens numrering inom platsbaserade delen. Sätts samman med attribut 'signum 1'
+          type: string
+          example: 10
+        alternativt_signum:
+          description: Alternativt signum
           type: array
-          description: Översättning av runtext
+          items:
+            type: string
+          example:
+            - Liljegren 1588
+            - Liljegren 1589
+            - BN 4
+        befintlig:
+          description: Anger om inskriftsbäraren finns kvar eller har försvunnit.
+          type: boolean
+          example: true
+        plats:
+          description: Anger platsen för var inskriftsbäraren finns belägen. TODO - korrekt?!
+          type: string
+          example: Resmo kyrka
+        placering:
+          description: Anger var inskriftsbäraren finns belägen. TODO - korrekt?!
+          type: string
+          example: Kalmar läns museum (KLM 24962)
+        ursprunglig_plats:
+            description: Anger om inskriftsbäraren finns på ursprunglig plats eller ej.
+            type: boolean
+            example: false
+        position:
+            # Anger geografisk information om inskriftsbäraren
+            $ref: '#/components/schemas/RunicInscriptionGeoPosition'
+        proveniens:
+          $ref: '#/components/schemas/Proveniens'
+        korsform:
+          description: Array av korsformer.
+          type: array
+          items:
+            $ref: '#/components/schemas/Korsform'
+        foremal:
+          description: Anger artefakt TODO.
+          type: string
+          example: runsten
+        runtyper:
+          description: Anger TODO.
+          type: string
+          example: Spegelvända runor
+        period:
+          description: Anger TODO.
+          type: string
+          example: V b 1100-t
+        material:
+          description: Anger TODO.
+          type: string
+          example: granit
+        materialtyp:
+          description: Anger TODO.
+          type: string
+          example: sten
+        ristare:
+          description: Anger TODO.
+          type: string
+          example: 'Torsten (A) [Källström 2007a:269]'
+        stilgruppering:
+          description: Anger TODO.
+          type: string
+          example: Pr3 - Pr4
+        objektid:
+          description: Anger TODO.
+          type: string
+          example: 10023100650001
+        runtext:
+          description: Innehåller array av Runtexter.
+          type: array
+          items:
+            $ref: '#/components/schemas/Runtext'
+        ovrigt:
+          description: Anger TODO.
+          type: string
+          example: Parsten till Sö 35.
+        translation:
+          description: Innehåller array av översättningar av runtexter
+          type: array
           items:
             $ref: '#/components/schemas/RunicTextTranslation'
-        position:
-          $ref: '#/components/schemas/RunicInscriptionGeoPosition'
-      description: Grundinformation för en runinskription
+        last_update_time:
+          description: Anger tidpunkten när senaste uppdatering av informationen om denna runinskrift gjorts
+          type: string
+          format: dateTime
+          example: 2018-01-07T13:00:60Z
+        bildlank:
+          description: Array av aspekter.
+          type: array
+          items:
+            type: string
+          example:
+            - >-
+              http://kmb.raa.se/cocoon/bild/raa-image/16000300012834/normal/1.jpg
+        referens:
+          description: Anger TODO.
+          type: array
+          items:
+            type: string
+          example:
+            - '$=Fv 1975:170'
+            - 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
+            - $=Andersson 1998b
+        externa_kallor:
+          description: Anger TODO.
+          type: array
+          items:
+            type: string
+          example:
+            - 6606074
+            - 1624844
+
     RunicTextTranslation:
       required:
         - text
@@ -848,9 +952,9 @@ components:
             - NORMALISERING
             - TRANSLITERERING
             - OVERSATTNING
-      description: Översättningstyp, transliterering/normalisering/översättning av
-        en runtext
+      description: Översättningstyp, transliterering/normalisering/översättning av en runtext
     RunicInscriptionGeoPosition:
+      description: Objektrepresentation av en inskriftsbärares Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
       required:
         - current
         - signum
@@ -858,6 +962,7 @@ components:
       type: object
       properties:
         signum:
+          # TODO behövs detta?
           type: string
           description: Signum
           example: Öl 4 $
@@ -866,11 +971,11 @@ components:
           description: Persistent identifierare för runinskriften
           example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
         current:
+          # Anger inskriftsbärarens nuvarande position?!
           $ref: '#/components/schemas/Geometry'
         orginal:
+          # Anger inskriftsbärarens ursprungliga position?!
           $ref: '#/components/schemas/Geometry'
-      description: Geografiska positioner med nuvarande och ev. ursprungligt läge
-        att rendera på en bakgrundskarta
     SelectionGroup:
       required:
         - id
@@ -921,7 +1026,7 @@ components:
       type: object
       description: |
         Objektrepresentation av en geografisk position uttryckt enligt GeoJSON[2016] specificatioenen. Se https://tools.ietf.org/html/rfc7946.
-        Notera att koordinatsystemet för angivna koordinater är uttryckta i WGS84. Se: https://tools.ietf.org/html/rfc7946#section-4
+        Notera att koordinatsystemet för angivna koordinater är uttryckta i WGS84 (EPSG:4326). Se: https://tools.ietf.org/html/rfc7946#section-4
         "The coordinate reference system for all GeoJSON coordinates is a geographic coordinate reference system, using the World Geodetic System 1984 (WGS 84) [WGS84] datum,
         with longitude and latitude units of decimal degrees.
         This is equivalent to the coordinate reference system identified by the Open Geospatial Consortium (OGC) URN urn:ogc:def:crs:OGC::CRS84."
@@ -946,52 +1051,117 @@ components:
             type: number
             example: "18.31511, 57.159624"
 
-    Geometry-geojson2008:
-      required:
-        - coordinates
-        - type
+    Proveniens:
       type: object
+      description: Objektrepresentation av en runinskrifts lokaliseringsinformation.
       properties:
-        type:
+        socken:
+          description: Anger ev. namn på socken där inskriftsbäraren hittades.
           type: string
-          example: Point
-          enum:
-            - Point
-            - Linestring
-            - Polygon
-        crs:
-          required:
-            - type
-          type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - name
-            properties:
-              required:
-                - name
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: Anger koordinatsystemet för geometrierna
-                  example: EPSG:3857
-        coordinates:
+          nullable: true
+          example: Bro socken
+        landskap:
+          description: Anger ev. namn på landskap där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Västra götaland
+        harad:
+          description: Anger ev. namn på härad där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Vallentuna hd
+        land:
+          description: Anger ev. namn på land där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Sverige
+
+    Korsform:
+      type: object
+      description: JSON-representation av korsformer.
+      properties:
+        aspekt:
+          description: Array av aspekter.
           type: array
           items:
-            type: array
-            items:
-              type: array
-              example:
-                - 57.6353939
-                - 18.2954135
-              items:
-                type: number
-      description: |-
-        Geometrier uttryckta i geoJSON formatet och benämns som GeoJSON[2008]. Se specifikationen http://geojson.org/.
+            type: string
+          example:
+            - A
+            - B
+            - C
+            - D
+            - E
+        kors:
+          description: Array av kors.
+          type: array
+          items:
+            $ref: '#/components/schemas/Kors'
+    Kors:
+      type: object
+      description: JSON-representation av kors.
+      properties:
+        A:
+          description: Array av A.
+          type: array
+          items:
+            type: string
+          example:
+            - 1
+            - 2
+        B:
+          description: Array av B.
+          type: array
+          items:
+            type: string
+          example: []
+        C:
+          description: Array av C.
+          type: array
+          items:
+            type: string
+          example:
+            - 2
+        D:
+          description: Array av D.
+          type: array
+          items:
+            type: string
+          example:
+            - 3
+            - 4
+            - 5
+        E:
+          description: Array av E.
+          type: array
+          items:
+            type: string
+          example:
+            - 2
+    Runtext:
+      type: object
+      description: JSON-representation av en Runtext.
+      properties:
+        runtext:
+          description: Namn på socken.
+          type: string
+          example: >-
+            : eimunr : auk : kuna- ... þeiR · -uku · kirþu · þisn · eftiR : kinu
+            : fatran
+        fornvastnordisk:
+          description: Namn på socken.
+          type: string
+          example: '<...-abi> þeir [lé]tu reisa stein[a] eptir "Randvé, móður sína.'
+        nationellt_fornsprak:
+          description: Namn på socken.
+          type: string
+          example: '<...-abi> þæiR [le]tu ræisa stæin[a] æftiR "Randvi, moður sina.'
+        engelska:
+          description: Namn på socken.
+          type: string
+          example: >-
+            <...-abi> they had the stones raised in memory of Randvé, their
+            mother.
 
-        TODO Vilket koordinatsystem skall vi använda? SR-ORG:7483 EPSG:3857 -- WGS84 Web Mercator (Auxiliary Sphere) för att visa på Google-maps?
     Error:
       required:
         - message
