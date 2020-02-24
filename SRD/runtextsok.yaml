@@ -8,12 +8,17 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-SAMSÖK
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.4
+  version: 0.9.5
 servers:
   - description: Uppsala Universitet Evighetsrunor API - TEST
     url: http://runor.test.uu.se/rest/
 #  - description: SwaggerHub API Auto Mocking
-#    url: 'https://virtserver.swaggerhub.com/uu/evighetsrunor/api/1.0.0-TODO'
+
+#### Utestående frågor #####
+# TODO Uppsala - vilket språk ska api:et vara på? Engelska eller svenska?
+# Nu är det en mix... fältnamn är (oftast) på engelska men förklaringar på svenska. Jag tycker att det borde vara konsekvent och jag tror det bästa
+# är att använda namnet på fältet i databasen för att undvika fler termer på samma sak. Jag lämnar till er att justera till vad ni finner lämpligast.
+
 paths:
   /signums:
     get:
@@ -499,8 +504,7 @@ paths:
       tags:
         - Utgåva
       summary: Hämtar all data i en utgåva
-      description: 'Hämtar en fil som innehåller all data i en utgåva av SRD. TODO:
-        bestämma format'
+      description: 'Hämtar en fil som innehåller all data i en utgåva av SRD. TODO bestämma vilket format som returneras.'
       parameters:
         - name: edition_id
           in: path
@@ -772,16 +776,14 @@ components:
       properties:
         uri:
           type: string
-          description: Persistent identifierare för runinskriften (används för att
-            hämta information från K-SAMSÖK)
+          description: Persistent identifierare för runinskriften (används för att hämta information från K-SAMSÖK)
           example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
         object_uri:
-          description: Persistent identifierare för bärare av runinskriften (används
-            för att hämta information från K-SAMSÖK)
+          description: Persistent identifierare för bärare av runinskriften (används för att hämta information från K-SAMSÖK)
           type: string
           example: https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
         signum:
-          description: Anger ett sammansatt signum bestående av "signum1 signum2".
+          description: Anger identifierare för inskrifter i form av ett sammansatt signum bestående av "signum1 signum2".
           type: string
           example: Öl 10
         signum1:
@@ -803,93 +805,98 @@ components:
             - Liljegren 1588
             - Liljegren 1589
             - BN 4
-        befintlig:
-          description: Anger om inskriftsbäraren finns kvar eller har försvunnit.
+        forsvunnen:
+          description: Anger om inskriftsbäraren har försvunnit.
           type: boolean
           example: true
-        plats:
-          description: Anger platsen för var inskriftsbäraren finns belägen. TODO - korrekt?!
-          type: string
-          example: Resmo kyrka
         placering:
-          description: Anger var inskriftsbäraren finns belägen. TODO - korrekt?!
+          description: Anger var inskriftsbäraren finns belägen.
           type: string
           example: Kalmar läns museum (KLM 24962)
         ursprunglig_plats:
-            description: Anger om inskriftsbäraren finns på ursprunglig plats eller ej.
+            description: Beskriver inskriftsbärarens ursprungliga placering.
+              Notera att värdet är trinärt! Dvs det kan anta tre värden. False, true respektive null.
+              Null innebär att värdet är okänt.
             type: boolean
+            nullable: true
             example: false
         position:
-            # Anger geografisk information om inskriftsbäraren
+            # Anger geografisk information om inskriftsbäraren position.
             $ref: '#/components/schemas/RunicInscriptionGeoPosition'
         proveniens:
           $ref: '#/components/schemas/Proveniens'
         korsform:
-          description: Array av korsformer.
-          type: array
-          items:
             $ref: '#/components/schemas/Korsform'
-        foremal:
-          description: Anger artefakt TODO.
+        artefakt:
+          description: Anger vilken typ av föremål inskriftsbäraren är.
           type: string
           example: runsten
         runtyper:
-          description: Anger TODO.
+          description: Anger vilka typer av runor som används i inskriften.
           type: string
           example: Spegelvända runor
         period:
-          description: Anger TODO.
+          description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
+            Är i praktiken även en grov tidsangivelse för inskriften.
           type: string
-          example: V b 1100-t
+          example: Vikingatid
         material:
-          description: Anger TODO.
+          description: Detaljerad indelning av de material som inskriftsbäraren består av. En inskriftsbärare kan bestå av flera material.
           type: string
           example: granit
         materialtyp:
-          description: Anger TODO.
+          description: Grov indelning av de material som inskriftsbäraren består av.
           type: string
           example: sten
         ristare:
-          description: Anger TODO.
+          description: Anger vem som ristat inskriften.
           type: string
           example: 'Torsten (A) [Källström 2007a:269]'
-        stilgruppering:
-          description: Anger TODO.
-          type: string
-          example: Pr3 - Pr4
-        objektid:
-          description: Anger TODO.
-          type: string
-          example: 10023100650001
-        runtext:
-          description: Innehåller array av Runtexter.
+# TODO Uppsala - "Överväg ta med osäkerhetsfaktor från db". (Marcus)
+        profilstil:
+          description: Anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
           type: array
           items:
-            $ref: '#/components/schemas/Runtext'
-        ovrigt:
-          description: Anger TODO.
+            type: string
+          example:
+            - Pr3
+        nmr_identifierare:
+          description: Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
+          type: string
+          example: 10023100650001
+#        # Runtext
+#        runtext:
+#          description: Innehåller array av Runtexter.
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/Runtext'
+        anteckningar:
+          description: Fritextfält för beskrivning av inskriftsbäraren.
           type: string
           example: Parsten till Sö 35.
-        translation:
-          description: Innehåller array av översättningar av runtexter
+# TODO Uppsala - här finns det tydligen en hel underliggande struktur bestående av runtext, läsning och normalisering.
+# Förslag - prata med Marcus om alternativa lösningar. Jag låter nedanstående objekt finnas kvar as-is men det är ev inte rätt att göra på detta sätt.
+# Kanske räcker om man döper om "translations" till mer passande?!
+        translations:
+          description: Array of translations of the runicinscription.
           type: array
           items:
             $ref: '#/components/schemas/RunicTextTranslation'
         last_update_time:
-          description: Anger tidpunkten när senaste uppdatering av informationen om denna runinskrift gjorts
+          description:  Anger tidpunkten då runiskriftsposten senast uppdaterades. Tidpunkt angiven enligt ISO8601.
           type: string
           format: dateTime
           example: 2018-01-07T13:00:60Z
-        bildlank:
-          description: Array av aspekter.
+        bildlankar:
+          description: Array av URL:er till bilder lagrade i SRD databas. (Dessa Skördas ej till K-samsök).
           type: array
           items:
             type: string
           example:
             - >-
               http://kmb.raa.se/cocoon/bild/raa-image/16000300012834/normal/1.jpg
-        referens:
-          description: Anger TODO.
+        referenser:
+          description: Array av referenser från SRD databasen.
           type: array
           items:
             type: string
@@ -897,18 +904,10 @@ components:
             - '$=Fv 1975:170'
             - 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
             - $=Andersson 1998b
-        externa_kallor:
-          description: Anger TODO.
-          type: array
-          items:
-            type: string
-          example:
-            - 6606074
-            - 1624844
 
     RunicTextTranslation:
-      required:
-        - text
+ #     required:
+ #       - text
       type: object
       properties:
         text:
@@ -962,19 +961,18 @@ components:
       type: object
       properties:
         signum:
-          # TODO behövs detta?
           type: string
           description: Signum
-          example: Öl 4 $
+          example: Öl 4
         uri:
           type: object
-          description: Persistent identifierare för runinskriften
+          description: Persistent identifierare för runinskriften.
           example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
         current:
-          # Anger inskriftsbärarens nuvarande position?!
+          # Anger inskriftsbärarens senaste kända (oftast nuvarande) position
           $ref: '#/components/schemas/Geometry'
         orginal:
-          # Anger inskriftsbärarens ursprungliga position?!
+          # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
     SelectionGroup:
       required:
@@ -1055,6 +1053,8 @@ components:
       type: object
       description: Objektrepresentation av en runinskrifts lokaliseringsinformation.
       properties:
+# TODO - Uppsala Universitet, tydligen är det inte så enkelt i srd db att det bara finns en socken. Ni får ta fram lämplig struktur!
+# Förslag - nedan börjar vi med att endast ha en socken tills vidare.
         socken:
           description: Anger ev. namn på socken där inskriftsbäraren hittades.
           type: string
@@ -1070,27 +1070,22 @@ components:
           type: string
           nullable: true
           example: Vallentuna hd
+        # TODO - Uppsala Universitet, tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
+        # Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
         land:
           description: Anger ev. namn på land där inskriftsbäraren hittades.
           type: string
           nullable: true
           example: Sverige
+        plats:
+          description: Anger platsen för var inskriftsbäraren ursprungligen kommer från.
+          type: string
+          example: Resmo kyrka
 
     Korsform:
       type: object
-      description: JSON-representation av korsformer.
+      description: JSON-representation av korsformer. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
       properties:
-        aspekt:
-          description: Array av aspekter.
-          type: array
-          items:
-            type: string
-          example:
-            - A
-            - B
-            - C
-            - D
-            - E
         kors:
           description: Array av kors.
           type: array
