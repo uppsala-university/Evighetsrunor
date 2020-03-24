@@ -15,12 +15,10 @@ servers:
 #  - description: SwaggerHub API Auto Mocking
 
 #### Utestående frågor #####
-# Sök efter TODO i detta dokuemnt. Där finns en utestående fråga.
-# TODO - Kolla NMR med Marcus - funkar strukturen för identifierare?
-# TODO - Attention Marcus gör översyn av objektet provenance. Oklar kravbild om vad som ska visas här
-# TODO Peter se ex material_free_text - ska vi ha den null om det saknas fritext, eller genererar du ett fält med tomma strängen ""?
-# TODO Peter - I de fall vi har arrayer förväntar jag mig ALLTID en array. Om det saknas data får jag en array med noll element. OK?
-# TODO Uppsala - "Överväg ta med osäkerhetsfaktor från db". (Marcus)
+# Sök efter TODO i detta dokument. Där finns en utestående fråga.
+# TODO - Uppsala Universitet, tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
+# Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
+
 paths:
   /signums:
     get:
@@ -571,19 +569,19 @@ components:
       description: Objektrepresentation av ett kors. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
       properties:
         crosshape:
-          $ref: '#/components/schemas/Crosshape'
+          $ref: '#/components/schemas/Crossform'
 
-    Crosshape:
+    Crossform:
       type: object
       description: JSON-representation av korsformer. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
       properties:
-        row:
-          description: Anger raden - dvs "versalen" för en korsform.
+        aspect:
+          description: Anger raden - dvs "versalen" för en korsform. Korsets övergripande form.
           type: string
           example:
             C
-        column:
-          description: Anger kolumnen - dvs "siffran" för en korsform.
+        form:
+          description: Anger kolumnen - dvs "siffran" för en korsform. Anger hur delen av ett kors ser ut.
           type: string
           example:
             3
@@ -689,9 +687,15 @@ components:
       properties:
         country:
           nullable: true
-          description: Anger vilket land kopplade nmr-identiteter tillhör.
+          description: Anger vilket land de kopplade NMR-identiteterna tillhör.
+            Danmark, Skottland, Norge, Sverige
           type: string
-          example: Sverige
+          enum:
+            - dk
+            - gb_sc
+            - no
+            - se
+          example: se
         identifiers:
           description: Array över nmr-identiteter.
           type: array
@@ -819,6 +823,24 @@ components:
           example: 0
       description: Paginerat svar med runinskription
 
+    Profilestyle:
+      description: Objektrepresentation som anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
+      required:
+        - style
+        - certainty
+      type: object
+      properties:
+        style:
+          description: Anger med vilken profilstil som inskriftsbäraren är ristad.
+          type: string
+          nullable: false
+          example: Pr3
+        certainty:
+          # TODO - ange lämplig beskrivning här. Vad betyder attributet?
+          description: Anger osäkerhetsfaktorn för ...
+          type: boolean
+          nullable: false
+          example: true
     Provenance:
       type: object
       description: Objektrepresentation av en runinskrifts lokaliseringsinformation.
@@ -826,62 +848,94 @@ components:
         place:
           description: Anger platsen för var inskriftsbäraren ursprungligen kommer från.
           type: string
+          nullable: false
           example: Resmo kyrka
         parish:
           description: Anger ev. namn på socken där inskriftsbäraren hittades.
           type: string
           nullable: true
           example: Bro socken
-        county:
-          description: Anger ev. namn på landskap där inskriftsbäraren hittades.
+        old_parish:
+          description: Anger ev. tidigare namn på socken där inskriftsbäraren hittades.
           type: string
           nullable: true
-          example: Västra götaland
-        hundreds:
+          example: Bro socken
+        hundred:
           description: Anger ev. namn på härad där inskriftsbäraren hittades.
           type: string
           nullable: true
           example: Vallentuna hd
-        # TODO - Uppsala Universitet, tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
-        # Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
+        province:
+          description: Anger ev. namn på landskap där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Västra götaland
+        county:
+          description: Anger ev. namn på län där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Gotland
+        municipality:
+          description: Anger ev. namn på kommun där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Rättvik
         country:
           description: Anger ev. namn på land där inskriftsbäraren hittades.
           type: string
           nullable: true
           example: Sverige
 
-    RunicInscription:
-      description: Grundinformation för en runinskription
+    OriginalLocation:
+      description: Grundinformation om en inskriftsbärares ursprungliga placering.
       required:
-        - signum
-        - translation
+        - location
+        - text
+      type: object
+      properties:
+        location:
+          description: Beskriver om inskriftsbäraren har kvar sin ursprungliga placering eller ej.
+            Notera att värdet är trinärt! Dvs det kan anta tre värden. False, true respektive null.
+            Null innebär att värdet är okänt.
+          type: boolean
+          nullable: true
+          example: false
+        text:
+          description: Anger ev. beskrivningstext för inskriftsbärarens ursprungliga placering.
+          type: string
+          nullable: true
+          example: "200 m sydöst om nuvarande position."
+
+    # TODO - byt namn - finns på wikin. Men jag hittar det inte. Marcus
+    RunicInscription:
+      description: Grundinformation för en runinskription.
+# TODO - vad är mandatory i responsen?
+      required:
         - uri
+        - signum 1
+        - signum 2
+        - translation
       type: object
       properties:
         uri:
+          description: Persistent identifierare för det sammansatta objektet (runinskrift + bärare av runinskriften) (används för att hämta information från K-SAMSÖK)
           type: string
-          description: Persistent identifierare för runinskriften (används för att hämta information från K-SAMSÖK)
-          example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
-        object_uri:
-          description: Persistent identifierare för bärare av runinskriften (används för att hämta information från K-SAMSÖK)
-          type: string
-          example: https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
-        signum:
-          description: Anger identifierare för inskrifter i form av ett sammansatt signum bestående av "signum1 signum2".
-          type: string
-          example: Öl 10
+          nullable: false
+          example: http://kulturarvsdata.se/uu/srdb/7b70c89a-c191-4d73-4455fd5dd2a7
         signum1:
           description: Anger den första identitetsdelen för runinskriften, s.k signum.
             Platsbaserad. Oftast landskapskoden där runstenen hittades. Sätts samman med attribut 'signum 2'
           type: string
+          nullable: false
           example: Öl
         signum2:
           description: Anger den andra identitetssdelen för runinskriften, s.k signum.
             Anger oftast runinskriftens numrering inom platsbaserade delen. Sätts samman med attribut 'signum 1'
           type: string
+          nullable: false
           example: 10
-        alternative_signum:
-          description: Alternativt signum
+        alternative_signa:
+          description: Alternativa signa.
           type: array
           items:
             type: string
@@ -889,23 +943,20 @@ components:
             - Liljegren 1588
             - Liljegren 1589
             - BN 4
-        is_lost:
-          description: Anger om inskriftsbäraren har försvunnit.
+        extant:
+          description: Anger om inskriftsbäraren existerar eller ej.
           type: boolean
+          nullable: false
           example: true
         placement:
           description: Anger var inskriftsbäraren finns belägen.
           type: string
-          example: Kalmar läns museum (KLM 24962)
-        place_of_origin:
-          description: Beskriver inskriftsbärarens ursprungliga placering.
-            Notera att värdet är trinärt! Dvs det kan anta tre värden. False, true respektive null.
-            Null innebär att värdet är okänt.
-          type: boolean
           nullable: true
-          example: false
+          example: Kalmar läns museum (KLM 24962)
+        original_location:
+          $ref: '#/components/schemas/OriginalLocation'
         position:
-          # Anger geografisk information om inskriftsbäraren position.
+          # Anger geografisk information om inskriftsbärarens position.
           $ref: '#/components/schemas/RunicInscriptionGeoPosition'
         provenance:
           $ref: '#/components/schemas/Provenance'
@@ -914,33 +965,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Cross'
-        artifact:
-          description: Anger vilken typ av föremål inskriftsbäraren är.
+        artefact:
+          description: Anger vilken typ av föremål inskriftsbäraren är av.
+          nullable: true
           type: string
           example: runsten
         runictypes:
-          description: Anger vilka typer av runor som används i inskriften.
-          type: string
-          example: Spegelvända runor
+          description: Anger vilka typer av runor som använts i inskriften.
+          type: array
+          items:
+            $ref: '#/components/schemas/RunicType'
         period:
           description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
             Är i praktiken även en grov tidsangivelse för inskriften.
           type: string
+          nullable: true
           example: Vikingatid
         material:
           $ref: '#/components/schemas/RunicMaterial'
-        ristare:
+        carver:
           description: Anger vem som ristat inskriften.
           type: string
+          nullable: true
           example: 'Torsten (A) [Källström 2007a:269]'
-        # TODO Uppsala - "Överväg ta med osäkerhetsfaktor från db". (Marcus)
-        profilstil:
+        profilestyle:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
           type: array
           items:
-            type: string
-          example:
-            - Pr3
+            $ref: '#/components/schemas/Profilestyle'
         nmr_identifierare:
           #  Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
           $ref: '#/components/schemas/Nmr'
@@ -955,21 +1007,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RunicText'
-        last_update_time:
-          description:  Anger tidpunkten då runiskriftsposten senast uppdaterades. Tidpunkt angiven enligt ISO8601.
-          type: string
-          format: dateTime
-          example: 2018-01-07T13:00:60Z
-        bildlankar:
-          description: Array av URL:er till bilder lagrade i SRD databas. (Dessa Skördas ej till K-samsök).
+
+        images:
+          description: Innehåller array av URL:er till bilder av objektet. Url:erna finns lagrade i SRD databas och skördas ej till K-samsök.
           type: array
           items:
             type: string
           example:
             - >-
               http://kmb.raa.se/cocoon/bild/raa-image/16000300012834/normal/1.jpg
-        referenser:
-          description: Array av referenser från SRD databasen.
+        references:
+          description: Innehåller array av referenser till objektet. Referenserna finns lagrade i SRD databas och skördas ej till K-samsök.
           type: array
           items:
             type: string
@@ -977,6 +1025,12 @@ components:
             - '$=Fv 1975:170'
             - 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
             - $=Andersson 1998b
+        last_update_time:
+          description:  Anger tidpunkten då runiskriftsposten senast uppdaterades. Tidpunkt angiven enligt ISO8601.
+          type: string
+          format: dateTime
+          nullable: false
+          example: 2018-01-07T13:00:60Z
 
     RunicMaterial:
       type: object
@@ -1004,13 +1058,17 @@ components:
       properties:
        reading:
           type: string
-          description: Anger ev. läsning av texten
+          description: Anger läsningen av texten
           example: '...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina'
-       transliterations:
-         description: Array av runinskriftens translittereringar.
+       reference:
+         type: string
+         description: Anger bokstav som identifierar vilken alternativ tolkning olika runologer har haft.
+         example: 'P'
+       interpretations:
+         description: Array av runinskriftens tolkningar. "Snygga till stavningen".
          type: array
          items:
-           $ref: '#/components/schemas/Transliteration'
+           $ref: '#/components/schemas/Interpretation'
        translations:
          description: Array av runinskriftens översättningar.
          type: array
@@ -1074,9 +1132,27 @@ components:
         current:
           # Anger inskriftsbärarens senaste kända (oftast nuvarande) position
           $ref: '#/components/schemas/Geometry'
-        orginal:
+        oldest_known:
           # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
+
+    RunicType:
+      description: Anger vilka typer av runor som använts i inskriften.
+      required:
+        - type
+        - category
+      type: object
+      properties:
+        type:
+          type: string
+          description: Anger typ av runinskrift.
+          nullable: true
+          example: Skiffer
+        category:
+          type: string
+          description: Anger kategori av runinskrift.
+          nullable: true
+          example: Spegelvända kvistrunor
 
     SearchResult:
       required:
@@ -1226,18 +1302,18 @@ components:
           description: Anger språket som översättningen är uttryckt i.
           example: Engelska
 
-    Transliteration:
+    Interpretation:
       type: object
-      description: Objektrepresentation av en transliterering.
+      description: Objektrepresentation av en Interpretation (transliterering).
       required:
-        - tranliteration
-        - transliteration_language
+        - text
+        - language
       properties:
-        tranliteration:
+        text:
           type: string
           description: Anger transliterering av en text
           example: Bengt lät resa denna sten efter sin moder...  (på fornnordiska)
-        transliteration_language:
+        language:
           type: string
           description: Anger språket som translitterering är uttryckt i.
           example: Fornvästnordiska.
