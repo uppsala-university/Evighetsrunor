@@ -979,7 +979,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RunicType'
-# TODO Peter - överväg att lägga till runictypedescription?!
+        runic_type_description:
+          $ref: '#/components/schemas/RunicTypeDescription'
         period:
           description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
             Är i praktiken även en grov tidsangivelse för inskriften.
@@ -1163,6 +1164,19 @@ components:
           description: Anger kategori av runinskrift.
           nullable: true
           example: Spegelvända kvistrunor
+
+    RunicTypeDescription:
+      description: Anger fritextbeskrivning av de typer av runor som använts i inskriften.
+      type: object
+      properties:
+        text:
+          type: string
+          nullable: true
+          example: o-runan har dubbelsidig bistav
+        language:
+          type: string
+          nullable: true
+          example: sv-se
 
     SearchResult:
       required:
