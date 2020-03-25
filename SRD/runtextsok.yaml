@@ -581,10 +581,10 @@ components:
       type: object
       description: Objektrepresentation av ett kors. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
       properties:
-        crosshape:
-          $ref: '#/components/schemas/Crossform'
+        cross_form:
+          $ref: '#/components/schemas/CrossForm'
 
-    Crossform:
+    CrossForm:
       type: object
       description: JSON-representation av korsformer. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
       properties:
@@ -747,7 +747,7 @@ components:
           description: Anger det material som inskriftsbäraren består av.
           type: string
           example: granit
-        materialtype:
+        material_type:
           description: Anger typen i form av grov indelning av det material som inskriftsbäraren består av.
           type: string
           example: sten
@@ -766,11 +766,11 @@ components:
             - '...'
         #          items:
         #            $ref: '#/components/schemas/Signum'
-        totalpages:
+        total_pages:
           type: integer
           description: Totalt antal sidor som kan hämtas
           example: 84
-        totalElements:
+        total_elements:
           type: integer
           description: Totalt antal objekt som kan hämtas
           example: 8345
@@ -786,7 +786,7 @@ components:
           type: boolean
           description: Anger om aktuell sida är den första
           example: true
-        numberOfElements:
+        number_of_elements:
           type: integer
           description: Antal objekt i aktuellt svar
           example: 100
@@ -807,11 +807,11 @@ components:
           description: Runinskrifter
           items:
             $ref: '#/components/schemas/RunicInscription'
-        totalpages:
+        total_pages:
           type: integer
           description: Totalt antal sidor som kan hämtas
           example: 84
-        totalElements:
+        total_elements:
           type: integer
           description: Totalt antal objekt som kan hämtas
           example: 8345
@@ -827,7 +827,7 @@ components:
           type: boolean
           description: Anger om aktuell sida är den första
           example: true
-        numberOfElements:
+        number_of_elements:
           type: integer
           description: Antal objekt i aktuellt svar
           example: 100
@@ -841,7 +841,7 @@ components:
           example: 0
       description: Paginerat svar med runinskription
 
-    Profilestyle:
+    ProfileStyle:
       description: Objektrepresentation som anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
       type: object
       properties:
@@ -974,12 +974,13 @@ components:
           nullable: true
           type: string
           example: runsten
-        runictypes:
+        runic_types:
           description: Anger vilka typer av runor som använts i inskriften.
           type: array
           items:
             $ref: '#/components/schemas/RunicType'
-# TODO Peter - överväg att lägga till runictypedescription?!
+        runic_type_description:
+          $ref: '#/components/schemas/RunicTypeDescription'
         period:
           description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
             Är i praktiken även en grov tidsangivelse för inskriften.
@@ -993,11 +994,11 @@ components:
           type: string
           nullable: true
           example: 'Torsten (A) [Källström 2007a:269]'
-        profilestyle:
+        profile_style:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
           type: array
           items:
-            $ref: '#/components/schemas/Profilestyle'
+            $ref: '#/components/schemas/ProfileStyle'
         nmr_identifier:
           #  Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
           $ref: '#/components/schemas/Nmr'
@@ -1007,7 +1008,7 @@ components:
           items:
             type: string
           example: Parsten till Sö 35.
-        runictexts:
+        runic_texts:
           description: Array of translations of the runicinscription.
           type: array
           items:
@@ -1164,6 +1165,19 @@ components:
           nullable: true
           example: Spegelvända kvistrunor
 
+    RunicTypeDescription:
+      description: Anger fritextbeskrivning av de typer av runor som använts i inskriften.
+      type: object
+      properties:
+        text:
+          type: string
+          nullable: true
+          example: o-runan har dubbelsidig bistav
+        language:
+          type: string
+          nullable: true
+          example: sv-se
+
     SearchResult:
       required:
         - inscription
@@ -1298,74 +1312,15 @@ components:
 
     Translation:
       type: object
-      description: Objektrepresentation av en transliterering.
+      description: Objektrepresentation av en översättning.
       properties:
         translation:
           description: Anger ev. översättning av texten
           type: string
           nullable: true
           example: Bengt raised this stone...
-        transliteration_language:
+        language:
           description: Anger språket som översättningen är uttryckt i.
           type: string
           nullable: true
           example: Engelska
-
-    Runtext-old:
-      type: object
-      description: JSON-representation av en Runtext.
-      properties:
-        runtext:
-          description: Namn på socken.
-          type: string
-          example: >-
-            : eimunr : auk : kuna- ... þeiR · -uku · kirþu · þisn · eftiR : kinu
-            : fatran
-        fornvastnordisk:
-          description: Namn på socken.
-          type: string
-          example: '<...-abi> þeir [lé]tu reisa stein[a] eptir "Randvé, móður sína.'
-        nationellt_fornsprak:
-          description: Namn på socken.
-          type: string
-          example: '<...-abi> þæiR [le]tu ræisa stæin[a] æftiR "Randvi, moður sina.'
-        engelska:
-          description: Namn på socken.
-          type: string
-          example: >-
-            <...-abi> they had the stones raised in memory of Randvé, their
-            mother.
-
-  parameters:
-    editionParameter:
-      name: edition_id
-      in: query
-      description: Id för önskad utgåva
-      required: true
-      schema:
-        type: string
-      example: 2020
-    pageParameter:
-      name: page
-      in: query
-      description: Index för önskad resultatsida
-      schema:
-        type: number
-        format: number
-      example: 0
-    sizeParameter:
-      name: size
-      in: query
-      description: Storlek på sidor
-      schema:
-        type: number
-        format: number
-      example: 10
-    sortParameter:
-      name: sort
-      in: query
-      description: Attribut som man vill använda föra att sortera svaret, tex "sort=id",
-        eller "sort=id,desc" om man vill ha svaret i fallande ordning.
-      schema:
-        type: string
-        format: sort
