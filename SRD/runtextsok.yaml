@@ -14,9 +14,25 @@ servers:
     url: http://runor.test.uu.se/rest/
 #  - description: SwaggerHub API Auto Mocking
 
+### Generella implementationsregler i API:et ###
+# Regel 1: Arrayer har alltid ett värde.
+#  Dvs om ett en array saknar värde så har den noll elemement. Effekten blir att en array kan aldrig ha värdet null.
+# Regel 2: Ingående objekt (subobjekt) i en respons har alltid ett värde.
+# Dvs om responsen innehåller ett subobjekt "provenance" så är objektet alltid definierat. Subobjekt kan aldrig ha värdet null.
+
+## Angående hur vi tolkar required och nullable ##
+# Regel 3: Tolkning av required: Attributet ingår alltid i responseobjektet, oavsett om attributet har ett värde eller ej.
+# Specifikation för "required" i ett schemaobject: https://swagger.io/specification/#schemaObject
+# Regel 4: Tolkning av nullable: Om ett attribut är deklarerat med värdet Nullable: false så innebär det att attributet alltid förväntas innehålla ett värde.
+# Om nullable däremot är true - då ingår alltid variablen i responsen men kan ha värdet null.
+# Ex: {"period": null, ...}"
+# Defaultvärdet för nullable är false. Så om en variabel inte är deklarerad med "nullable" innebär det att den får värdet false.
+# Specifikation för "nullable" i ett schemaobject:  https://swagger.io/specification/#schemaNullable
+
 #### Utestående frågor #####
 # Sök efter TODO i detta dokument. Där finns en utestående fråga.
-# TODO - Uppsala Universitet, tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
+# TODO 1: RAÄ har krav på sig att själva gui:et ska vara tvåspråkigt. Men ska själva datat ska väl inte vara flerspråkigt?! Måste utredas vad som gäller! Att: Rickard
+# OM dataposter finns på flera språk, så finns dettydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
 # Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
 
 paths:
@@ -653,9 +669,6 @@ components:
         "The coordinate reference system for all GeoJSON coordinates is a geographic coordinate reference system, using the World Geodetic System 1984 (WGS 84) [WGS84] datum,
         with longitude and latitude units of decimal degrees.
         This is equivalent to the coordinate reference system identified by the Open Geospatial Consortium (OGC) URN urn:ogc:def:crs:OGC::CRS84."
-      required:
-        - coordinates
-        - type
       properties:
         type:
           description: |
@@ -677,28 +690,23 @@ components:
     Interpretation:
       type: object
       description: Objektrepresentation av en Interpretation (transliterering).
-      required:
-        - text
-        - language
       properties:
         text:
-          type: string
           description: Anger transliterering av en text
+          type: string
+          nullable: true
           example: Bengt lät resa denna sten efter sin moder...  (på fornnordiska)
         language:
           type: string
+          nullable: true
           description: Anger språket som translitterering är uttryckt i.
           example: Fornvästnordiska.
 
     Nmr:
       type: object
       description: Objektrepresentation av National Monument Registers (NMR) identifierare kopplade till inskriftsbäraren i andra informationssystem.
-      required:
-        - country
-        - identifiers
       properties:
         country:
-          nullable: false
           description: Anger vilket land de kopplade NMR-identiteterna tillhör.
             Danmark, Skottland, Norge, Sverige
           type: string
@@ -717,9 +725,6 @@ components:
     NmrIdentifier:
       type: object
       description: Objektrepresentation av en nyckel-värde par för en nmr-identifiere.
-      required:
-        - key
-        - value
       properties:
         key:
           description: Anger typen av nmr-identitet.
@@ -837,20 +842,15 @@ components:
 
     Profilestyle:
       description: Objektrepresentation som anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
-      required:
-        - style
-        - certainty
       type: object
       properties:
         style:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad.
           type: string
-          nullable: false
           example: Pr3
         certainty:
           description: Anger säkerhetsfaktorn för bedömningen. "Det här är definitivt profilstil 2"
           type: boolean
-          nullable: false
           example: true
 
     Provenance:
@@ -860,7 +860,6 @@ components:
         place:
           description: Anger platsen för var inskriftsbäraren ursprungligen kommer från.
           type: string
-          nullable: false
           example: Resmo kyrka
         parish:
           description: Anger ev. namn på socken där inskriftsbäraren hittades.
@@ -900,9 +899,6 @@ components:
 
     OriginalLocation:
       description: Grundinformation om en inskriftsbärares ursprungliga placering.
-      required:
-        - location
-        - text
       type: object
       properties:
         original:
@@ -918,32 +914,13 @@ components:
           nullable: true
           example: "200 m sydöst om nuvarande position."
 
-    # TODO - byt namn - finns på wikin. Men jag hittar det inte. Marcus återkommer.
+    # TODO - Överväg byt namn - lär finnas på wikin. Marcus återkommer.
     RunicInscription:
       description: Grundinformation för en runinskription.
-      required:
-        - uri
-        - signum 1
-        - signum 2
-        - alternative_signa
-        - extant
-        - translation
-        - original_location
-        - position
-        - provenance
-        - crosses
-        - runictypes
-        - material
-        - profilestyle
-        - nmr_identifier
-        - notes
-        - translations
-        - images
-        - references
-        - last_update_time
       type: object
       properties:
-        id:
+# TODO Peter - ok att kalla den för inscription_id? - mindre anonymt än "id"
+        inscription_id:
           type: string
           format: uuid
           description: Anger identiteten (uuid) till runinskriften.
@@ -951,26 +928,22 @@ components:
         uri:
           description: Persistent identifierare för det sammansatta objektet (runinskrift + bärare av runinskriften) (används för att hämta information från K-SAMSÖK)
           type: string
-          nullable: false
           example: http://kulturarvsdata.se/uu/srdb/7b70c89a-c191-4d73-4455fd5dd2a7
         signum1:
           description: Anger den första identitetsdelen för runinskriften, s.k signum.
             Platsbaserad. Oftast landskapskoden där runstenen hittades. Sätts samman med attribut 'signum 2'
           type: string
-          nullable: false
           example: Öl
         signum2:
           description: Anger den andra identitetssdelen för runinskriften, s.k signum.
             Anger oftast runinskriftens numrering inom platsbaserade delen. Sätts samman med attribut 'signum 1'
           type: string
-          nullable: false
           example: 10
         alternative_signa:
           description: Alternativa signa.
           type: array
           items:
             type: string
-          nullable: false
           example:
             - Liljegren 1588
             - Liljegren 1589
@@ -978,7 +951,6 @@ components:
         extant:
           description: Anger om inskriftsbäraren existerar eller ej.
           type: boolean
-          nullable: false
           example: true
         placement:
           description: Anger var inskriftsbäraren finns belägen.
@@ -1007,7 +979,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RunicType'
-        # TODO - lägga till runictypedescription?! Peter!
+# TODO Peter - överväg att lägga till runictypedescription?!
         period:
           description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
             Är i praktiken även en grov tidsangivelse för inskriften.
@@ -1043,7 +1015,6 @@ components:
         ornamental:
             description: Anger huruvida objektet är ornamentantalt eller ej. Om sant - så finns inga runor, bara ornament.
             type: boolean
-            nullable: true
             example: true
         image_links:
           description: Innehåller array av URL:er till bilder av objektet. Url:erna finns lagrade i SRD databas och skördas ej till K-samsök.
@@ -1065,9 +1036,6 @@ components:
 
     RunicMaterial:
       type: object
-      required:
-        - material_free_text
-        - materials
       properties:
         material_free_text:
           nullable: true
@@ -1084,21 +1052,15 @@ components:
     RunicText:
       type: object
       description: Objektrepresentation av en inskriftsversion.
-      required:
-        - reading
-        - reference
-        - interpretations
-        - translations
       properties:
        reading:
-          type: string
           description: Anger läsningen av texten
-          nullable: true
+          type: string
           example: '...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina'
        reference:
-         type: string
          description: Anger bokstav som identifierar vilken alternativ tolkning olika runologer har haft.
-         nullable: false
+         type: string
+         nullable: true
          example: 'P'
        interpretations:
          description: Array av runinskriftens tolkningar. "Snygga till stavningen".
@@ -1148,9 +1110,6 @@ components:
 
     RunicInscriptionGeoPosition:
       description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
-      required:
-        - current
-        - oldest_known
       type: object
       properties:
         current:
@@ -1163,30 +1122,20 @@ components:
     RunicInscriptionIndex:
       description: Objektrepresentation i "index" format av en inskriftsbärares signifikanta attribut.
         Innehåller geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta.
-      required:
-        - id
-        - uri
-        - signum
-        - parish
-        - current
-        - oldest_known
       type: object
       properties:
-        id:
+        inscription_id:
+          description: Anger identiteten (uuid) till runinskriften.
           type: string
           format: uuid
-          description: Anger identiteten (uuid) till runinskriften.
-          nullable: false
           example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         uri:
-          description: Anger identiteten (uuid) till runinskriften.
+          description: Anger persistent identitet (uri) för runinskriften.
           type: string
-          nullable: false
           example: http://kulturarvsdata.se/uu/srdb/7b70c89a-c191-4d73-4455fd5dd2a7
         signum:
           description: Anger ett komplett signum bestående av signum1 + signum2.
           type: string
-          nullable: false
           example: Öl 10
         parish:
           description: Anger ev. namn på socken där inskriftsbäraren hittades.
@@ -1202,9 +1151,6 @@ components:
 
     RunicType:
       description: Anger vilka typer av runor som använts i inskriften.
-      required:
-        - type
-        - category
       type: object
       properties:
         type:
@@ -1353,17 +1299,16 @@ components:
     Translation:
       type: object
       description: Objektrepresentation av en transliterering.
-      required:
-        - tranliteration
-        - transliteration_language
       properties:
         translation:
-          type: string
           description: Anger ev. översättning av texten
+          type: string
+          nullable: true
           example: Bengt raised this stone...
         transliteration_language:
-          type: string
           description: Anger språket som översättningen är uttryckt i.
+          type: string
+          nullable: true
           example: Engelska
 
     Runtext-old:
