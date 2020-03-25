@@ -31,8 +31,9 @@ servers:
 
 #### Utestående frågor #####
 # Sök efter TODO i detta dokument. Där finns en utestående fråga.
+
 # TODO 1: RAÄ har krav på sig att själva gui:et ska vara tvåspråkigt. Men ska själva datat ska väl inte vara flerspråkigt?! Måste utredas vad som gäller! Att: Rickard
-# OM dataposter finns på flera språk, så finns dettydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
+# OM dataposter finns på flera språk, så finns det tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
 # Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
 
 paths:
@@ -371,7 +372,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RunicInscriptionIndex'
+                  $ref: '#/components/schemas/MapIndex'
         400:
           description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
           content:
@@ -919,7 +920,6 @@ components:
       description: Grundinformation för en runinskription.
       type: object
       properties:
-# TODO Peter - ok att kalla den för inscription_id? - mindre anonymt än "id"
         inscription_id:
           type: string
           format: uuid
@@ -1119,7 +1119,7 @@ components:
           # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
 
-    RunicInscriptionIndex:
+    MapIndex:
       description: Objektrepresentation i "index" format av en inskriftsbärares signifikanta attribut.
         Innehåller geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta.
       type: object
