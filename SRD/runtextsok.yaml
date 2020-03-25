@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.2
 info:
   title: Samnordisk runtextdatabas söktjänst API
   description: Samnordisk runtextdatabas (SRD) söktjänst API. Specification för Riksantikvarieämbetets
@@ -14,10 +14,27 @@ servers:
     url: http://runor.test.uu.se/rest/
 #  - description: SwaggerHub API Auto Mocking
 
+### Generella implementationsregler i API:et ###
+# Regel 1: Arrayer har alltid ett värde.
+#  Dvs om ett en array saknar värde så har den noll elemement. Effekten blir att en array kan aldrig ha värdet null.
+# Regel 2: Ingående objekt (subobjekt) i en respons har alltid ett värde.
+# Dvs om responsen innehåller ett subobjekt "provenance" så är objektet alltid definierat. Subobjekt kan aldrig ha värdet null.
+
+## Angående hur vi tolkar required och nullable ##
+# Regel 3: Tolkning av required: Attributet ingår alltid i responseobjektet, oavsett om attributet har ett värde eller ej.
+# Specifikation för "required" i ett schemaobject: https://swagger.io/specification/#schemaObject
+# Regel 4: Tolkning av nullable: Om ett attribut är deklarerat med värdet Nullable: false så innebär det att attributet alltid förväntas innehålla ett värde.
+# Om nullable däremot är true - då ingår alltid variablen i responsen men kan ha värdet null.
+# Ex: {"period": null, ...}"
+# Defaultvärdet för nullable är false. Så om en variabel inte är deklarerad med "nullable" innebär det att den får värdet false.
+# Specifikation för "nullable" i ett schemaobject:  https://swagger.io/specification/#schemaNullable
+
 #### Utestående frågor #####
-# TODO Uppsala - vilket språk ska api:et vara på? Engelska eller svenska?
-# Nu är det en mix... fältnamn är (oftast) på engelska men förklaringar på svenska. Jag tycker att det borde vara konsekvent och jag tror det bästa
-# är att använda namnet på fältet i databasen för att undvika fler termer på samma sak. Jag lämnar till er att justera till vad ni finner lämpligast.
+# Sök efter TODO i detta dokument. Där finns en utestående fråga.
+
+# TODO 1: RAÄ har krav på sig att själva gui:et ska vara tvåspråkigt. Men ska själva datat ska väl inte vara flerspråkigt?! Måste utredas vad som gäller! Att: Rickard
+# OM dataposter finns på flera språk, så finns det tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
+# Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
 
 paths:
   /signums:
@@ -349,13 +366,19 @@ paths:
             type: string
       responses:
         200:
-          description: (OK). Poster hittades
+          description: (OK). Poster hittades.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RunicInscriptionGeoPosition'
+                  $ref: '#/components/schemas/MapIndex'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
@@ -407,23 +430,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        404:
-          description: (Not found). Angiven post kunde inte hittas.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-              example:
-                status: 404
-                message: Signum eller URI saknas
-                path: /selection/12/test
-                timestamp: 1990-12-31T23:59:60Z
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+                
   /inscriptions/{id}:
     get:
       tags:
@@ -431,15 +444,16 @@ paths:
       summary: Hämtar en runinskrift med hjälp av signum eller URI
       description: Hämtar en runinskrift med hjälp av signum eller URI
       parameters:
-        - name: edition_id
-          in: query
-          description: Id för önskad utgåva
+        - in: path
+          name: id
+          description: Anger identiteten till inskriften (uuid).
           required: true
           schema:
             type: string
-        - name: id
-          in: path
-          description: Signum eller URI
+            format: uuid
+        - name: edition_id
+          in: query
+          description: Id för önskad utgåva
           required: true
           schema:
             type: string
@@ -563,6 +577,28 @@ paths:
         - Övriga tjänster
 components:
   schemas:
+    Cross:
+      type: object
+      description: Objektrepresentation av ett kors. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
+      properties:
+        crosshape:
+          $ref: '#/components/schemas/Crossform'
+
+    Crossform:
+      type: object
+      description: JSON-representation av korsformer. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
+      properties:
+        aspect:
+          description: Anger raden - dvs "versalen" för en korsform. Korsets övergripande form.
+          type: string
+          example:
+            C
+        form:
+          description: Anger kolumnen - dvs "siffran" för en korsform. Anger hur delen av ett kors ser ut.
+          type: string
+          example:
+            3
+
     Echo:
       type: object
       description: Objekt för att representera svaret till echo-tjänsten.
@@ -593,90 +629,129 @@ components:
           description: Anger URL för att ladda ner all data i en utgåva
           example: /editions/2018/download
       description: En utgåva (version) av SRD
-    SearchQuery:
+
+    Error:
       required:
-        - query
+        - message
+        - path
+        - status
+        - timestamp
       type: object
       properties:
-        query:
-          type: array
-          description: Textsökfråga
-          items:
-            $ref: '#/components/schemas/TextQueryGroup'
-        filter:
-          type: array
-          description: Filtrering
-          items:
-            $ref: '#/components/schemas/Selection'
-      description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning
-        i SRD
-    TextQueryGroup:
-      required:
-        - condition
-      type: object
-      properties:
-        op:
+        status:
+          type: integer
+          description: Http statuskod
+          example: 500
+        message:
           type: string
-          description: Anger logisk operator för användas när flera sökfrågor kombineras.
-            Första frågan i en TextQueryGroup behöver inte ha en logisk operator
+          description: Innehåller ett felmeddelande tänkt att presenteras för slutanvändare
+          example: Tekniskt fel, försök senare
+        exception:
+          type: string
+          description: Innehåller ett felmeddelande tänkt för tekniker vid felsökning
+          example: java.lang.NullPointerException
+        path:
+          type: string
+          description: Anger den resourcepath där felet uppstod
+          example: /selection/13/Test
+        timestamp:
+          type: string
+          description: Anger tidpunkten när felet inträffade. Tidpunkt angiven som
+            date-time, se RFC3339 (Internet Date/Time Format)
+          format: dateTime
+          example: 2019-01-04T23:59:60Z
+      description: Ett fel
+
+    Geometry:
+      type: object
+      description: |
+        Objektrepresentation av en geografisk position uttryckt enligt GeoJSON[2016] specificatioenen. Se https://tools.ietf.org/html/rfc7946.
+        Notera att koordinatsystemet för angivna koordinater är uttryckta i WGS84 (EPSG:4326). Se: https://tools.ietf.org/html/rfc7946#section-4
+        "The coordinate reference system for all GeoJSON coordinates is a geographic coordinate reference system, using the World Geodetic System 1984 (WGS 84) [WGS84] datum,
+        with longitude and latitude units of decimal degrees.
+        This is equivalent to the coordinate reference system identified by the Open Geospatial Consortium (OGC) URN urn:ogc:def:crs:OGC::CRS84."
+      properties:
+        type:
+          description: |
+            Anger tillåtna koordinattyper för geometrin.
+          type: string
           enum:
-            - AND
-            - OR
-            - NOT
-        condition:
+            - Point
+          example: Point
+        coordinates:
+          description: |
+            Anger koordinater för geometrin. Exemplet uttryckt enligt longitude, latitude.
+            Se: https://tools.ietf.org/html/rfc7946#appendix-A.1
+            "Point coordinates are in x, y order (easting, northing for projected coordinates, longitude, and latitude for geographic coordinates)".
           type: array
           items:
-            $ref: '#/components/schemas/TextQuery'
-      description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
-    TextQuery:
-      required:
-        - matching_text
-        - proper_name_search
+            type: number
+            example: "18.31511, 57.159624"
+
+    Interpretation:
       type: object
+      description: Objektrepresentation av en Interpretation (transliterering).
       properties:
-        op:
+        text:
+          description: Anger transliterering av en text
           type: string
-          description: Anger logisk operator för användas när flera sökfrågor kombineras.
-            Första frågan i en TextQuery behöver inte ha en logisk operator
-          enum:
-            - AND
-            - OR
-            - NOT
-        matching_text:
+          nullable: true
+          example: Bengt lät resa denna sten efter sin moder...  (på fornnordiska)
+        language:
           type: string
-          description: Söktext
-          example: þaiR
-        proper_name_search:
-          type: string
-          description: Anger hur/om sökning skall ske i egennamn
-          enum:
-            - INCLUDE
-            - EXCLUDE
-            - ONLY
-        translation_type_id:
-          type: string
-          description: Anger i vilken översättning sökningen skall ske
-          example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
-      description: Sökfråga som används för att sätta villkor för textsökning i SRD
-    SearchResult:
-      required:
-        - inscription
+          nullable: true
+          description: Anger språket som translitterering är uttryckt i.
+          example: Fornvästnordiska.
+
+    Nmr:
       type: object
+      description: Objektrepresentation av National Monument Registers (NMR) identifierare kopplade till inskriftsbäraren i andra informationssystem.
       properties:
-        inscription:
+        country:
+          description: Anger vilket land de kopplade NMR-identiteterna tillhör.
+            Danmark, Skottland, Norge, Sverige
+          type: string
+          enum:
+            - dk
+            - gb_sc
+            - no
+            - se
+          example: se
+        identifiers:
+          description: Array över nmr-identiteter.
           type: array
-          description: Runinskrifter
           items:
-            $ref: '#/components/schemas/RunicInscription'
-        found_words_index:
-          type: array
-          example:
-            - 0
-            - 4
-            - 6
-          items:
-            type: integer
-      description: Resultat av en sökfråga
+            $ref: '#/components/schemas/NmrIdentifier'
+
+    NmrIdentifier:
+      type: object
+      description: Objektrepresentation av en nyckel-värde par för en nmr-identifiere.
+      properties:
+        key:
+          description: Anger typen av nmr-identitet.
+          type: string
+          example: fmisid
+        value:
+          description: Anger värdet för nmr-identiteten.
+          type: string
+          example: abc123
+
+    Material:
+      type: object
+      required:
+        - material
+        - materialtype
+      description: Objektrepresentation av en materialförekomst för inskriftsbärare.
+      properties:
+        material:
+          description: Anger det material som inskriftsbäraren består av.
+          type: string
+          example: granit
+        materialtype:
+          description: Anger typen i form av grov indelning av det material som inskriftsbäraren består av.
+          type: string
+          example: sten
+
     PagedSignumResponse:
       type: object
       properties:
@@ -766,26 +841,94 @@ components:
           example: 0
       description: Paginerat svar med runinskription
 
-    RunicInscription:
-      description: Grundinformation för en runinskription
-      required:
-        - signum
-        - translation
-        - uri
+    Profilestyle:
+      description: Objektrepresentation som anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
       type: object
       properties:
+        style:
+          description: Anger med vilken profilstil som inskriftsbäraren är ristad.
+          type: string
+          example: Pr3
+        certainty:
+          description: Anger säkerhetsfaktorn för bedömningen. "Det här är definitivt profilstil 2"
+          type: boolean
+          example: true
+
+    Provenance:
+      type: object
+      description: Objektrepresentation av en runinskrifts lokaliseringsinformation.
+      properties:
+        place:
+          description: Anger platsen för var inskriftsbäraren ursprungligen kommer från.
+          type: string
+          example: Resmo kyrka
+        parish:
+          description: Anger ev. namn på socken där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Bro socken
+        old_parish:
+          description: Anger ev. tidigare namn på socken där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Bro socken
+        hundred:
+          description: Anger ev. namn på härad där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Vallentuna hd
+        province:
+          description: Anger ev. namn på landskap där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Västra götaland
+        county:
+          description: Anger ev. namn på län där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Gotland
+        municipality:
+          description: Anger ev. namn på kommun där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Rättvik
+        country:
+          description: Anger ev. namn på land där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Sverige
+
+    OriginalLocation:
+      description: Grundinformation om en inskriftsbärares ursprungliga placering.
+      type: object
+      properties:
+        original:
+          description: Beskriver om inskriftsbäraren har kvar sin ursprungliga placering eller ej.
+            Notera att värdet är trinärt! Dvs det kan anta tre värden. False, true respektive null.
+            Null innebär att värdet är okänt.
+          type: boolean
+          nullable: true
+          example: false
+        text:
+          description: Anger ev. beskrivningstext för inskriftsbärarens ursprungliga placering.
+          type: string
+          nullable: true
+          example: "200 m sydöst om nuvarande position."
+
+    # TODO - Överväg byt namn - lär finnas på wikin. Marcus återkommer.
+    RunicInscription:
+      description: Grundinformation för en runinskription.
+      type: object
+      properties:
+        inscription_id:
+          type: string
+          format: uuid
+          description: Anger identiteten (uuid) till runinskriften.
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         uri:
+          description: Persistent identifierare för det sammansatta objektet (runinskrift + bärare av runinskriften) (används för att hämta information från K-SAMSÖK)
           type: string
-          description: Persistent identifierare för runinskriften (används för att hämta information från K-SAMSÖK)
-          example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
-        object_uri:
-          description: Persistent identifierare för bärare av runinskriften (används för att hämta information från K-SAMSÖK)
-          type: string
-          example: https://kulturarvsdata.se/objekt/lamning/7b70c89a-c191-4d73-4455fd5dd2a7
-        signum:
-          description: Anger identifierare för inskrifter i form av ett sammansatt signum bestående av "signum1 signum2".
-          type: string
-          example: Öl 10
+          example: http://kulturarvsdata.se/uu/srdb/7b70c89a-c191-4d73-4455fd5dd2a7
         signum1:
           description: Anger den första identitetsdelen för runinskriften, s.k signum.
             Platsbaserad. Oftast landskapskoden där runstenen hittades. Sätts samman med attribut 'signum 2'
@@ -796,8 +939,8 @@ components:
             Anger oftast runinskriftens numrering inom platsbaserade delen. Sätts samman med attribut 'signum 1'
           type: string
           example: 10
-        alternativt_signum:
-          description: Alternativt signum
+        alternative_signa:
+          description: Alternativa signa.
           type: array
           items:
             type: string
@@ -805,119 +948,131 @@ components:
             - Liljegren 1588
             - Liljegren 1589
             - BN 4
-        forsvunnen:
-          description: Anger om inskriftsbäraren har försvunnit.
+        extant:
+          description: Anger om inskriftsbäraren existerar eller ej.
           type: boolean
           example: true
-        placering:
+        placement:
           description: Anger var inskriftsbäraren finns belägen.
           type: string
+          nullable: true
           example: Kalmar läns museum (KLM 24962)
-        ursprunglig_plats:
-            description: Beskriver inskriftsbärarens ursprungliga placering.
-              Notera att värdet är trinärt! Dvs det kan anta tre värden. False, true respektive null.
-              Null innebär att värdet är okänt.
-            type: boolean
-            nullable: true
-            example: false
+        original_location:
+          $ref: '#/components/schemas/OriginalLocation'
         position:
-            # Anger geografisk information om inskriftsbäraren position.
-            $ref: '#/components/schemas/RunicInscriptionGeoPosition'
-        proveniens:
-          $ref: '#/components/schemas/Proveniens'
-        korsform:
-            $ref: '#/components/schemas/Korsform'
-        artefakt:
-          description: Anger vilken typ av föremål inskriftsbäraren är.
+          # Anger geografisk information om inskriftsbärarens position.
+          $ref: '#/components/schemas/RunicInscriptionGeoPosition'
+        provenance:
+          $ref: '#/components/schemas/Provenance'
+        crosses:
+          description: Array av kors.
+          type: array
+          items:
+            $ref: '#/components/schemas/Cross'
+        artefact:
+          description: Anger vilken typ av föremål inskriftsbäraren är av.
+          nullable: true
           type: string
           example: runsten
-        runtyper:
-          description: Anger vilka typer av runor som används i inskriften.
-          type: string
-          example: Spegelvända runor
+        runictypes:
+          description: Anger vilka typer av runor som använts i inskriften.
+          type: array
+          items:
+            $ref: '#/components/schemas/RunicType'
+# TODO Peter - överväg att lägga till runictypedescription?!
         period:
           description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
             Är i praktiken även en grov tidsangivelse för inskriften.
           type: string
+          nullable: true
           example: Vikingatid
         material:
-          description: Detaljerad indelning av de material som inskriftsbäraren består av. En inskriftsbärare kan bestå av flera material.
-          type: string
-          example: granit
-        materialtyp:
-          description: Grov indelning av de material som inskriftsbäraren består av.
-          type: string
-          example: sten
-        ristare:
+          $ref: '#/components/schemas/RunicMaterial'
+        carver:
           description: Anger vem som ristat inskriften.
           type: string
+          nullable: true
           example: 'Torsten (A) [Källström 2007a:269]'
-# TODO Uppsala - "Överväg ta med osäkerhetsfaktor från db". (Marcus)
-        profilstil:
+        profilestyle:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
           type: array
           items:
-            type: string
-          example:
-            - Pr3
-        nmr_identifierare:
-          description: Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
-          type: string
-          example: 10023100650001
-#        # Runtext
-#        runtext:
-#          description: Innehåller array av Runtexter.
-#          type: array
-#          items:
-#            $ref: '#/components/schemas/Runtext'
-        anteckningar:
+            $ref: '#/components/schemas/Profilestyle'
+        nmr_identifier:
+          #  Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
+          $ref: '#/components/schemas/Nmr'
+        notes:
           description: Fritextfält för beskrivning av inskriftsbäraren.
-          type: string
+          type: array
+          items:
+            type: string
           example: Parsten till Sö 35.
-# TODO Uppsala - här finns det tydligen en hel underliggande struktur bestående av runtext, läsning och normalisering.
-# Förslag - prata med Marcus om alternativa lösningar. Jag låter nedanstående objekt finnas kvar as-is men det är ev inte rätt att göra på detta sätt.
-# Kanske räcker om man döper om "translations" till mer passande?!
-        translations:
+        runictexts:
           description: Array of translations of the runicinscription.
           type: array
           items:
-            $ref: '#/components/schemas/RunicTextTranslation'
-        last_update_time:
-          description:  Anger tidpunkten då runiskriftsposten senast uppdaterades. Tidpunkt angiven enligt ISO8601.
-          type: string
-          format: dateTime
-          example: 2018-01-07T13:00:60Z
-        bildlankar:
-          description: Array av URL:er till bilder lagrade i SRD databas. (Dessa Skördas ej till K-samsök).
+            $ref: '#/components/schemas/RunicText'
+        ornamental:
+            description: Anger huruvida objektet är ornamentantalt eller ej. Om sant - så finns inga runor, bara ornament.
+            type: boolean
+            example: true
+        image_links:
+          description: Innehåller array av URL:er till bilder av objektet. Url:erna finns lagrade i SRD databas och skördas ej till K-samsök.
           type: array
           items:
             type: string
           example:
             - >-
               http://kmb.raa.se/cocoon/bild/raa-image/16000300012834/normal/1.jpg
-        referenser:
-          description: Array av referenser från SRD databasen.
+        references:
+          description: Innehåller array av referenser till objektet. Referenserna finns lagrade i SRD databas och skördas ej till K-samsök.
           type: array
           items:
             type: string
           example:
-            - '$=Fv 1975:170'
+            - 'Fv 1975:170'
             - 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
-            - $=Andersson 1998b
+            - 'Andersson 1998b'
 
-    RunicTextTranslation:
- #     required:
- #       - text
+    RunicMaterial:
       type: object
       properties:
-        text:
+        material_free_text:
+          nullable: true
+          description: Fritextfält som anger det material som inskriftsbäraren består av. Fältet är ostrukturerat.
           type: string
-          description: Runtext
-          example: '...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor
-            sina'
-        translation_type:
-          $ref: '#/components/schemas/RunicTextTranslationType'
-      description: En transliterering/normalisering/översättning av en runtext
+          example: granit
+        materials:
+          description: Array över de material som inskriftsbäraren består av. En inskriftsbärare kan bestå av flera material.
+            Attributet är en strukturerad representation av attributet 'material_fritext' ovan.
+          type: array
+          items:
+            $ref: '#/components/schemas/Material'
+
+    RunicText:
+      type: object
+      description: Objektrepresentation av en inskriftsversion.
+      properties:
+       reading:
+          description: Anger läsningen av texten
+          type: string
+          example: '...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina'
+       reference:
+         description: Anger bokstav som identifierar vilken alternativ tolkning olika runologer har haft.
+         type: string
+         nullable: true
+         example: 'P'
+       interpretations:
+         description: Array av runinskriftens tolkningar. "Snygga till stavningen".
+         type: array
+         items:
+           $ref: '#/components/schemas/Interpretation'
+       translations:
+         description: Array av runinskriftens översättningar.
+         type: array
+         items:
+           $ref: '#/components/schemas/Translation'
+
     RunicTextTranslationType:
       required:
         - id
@@ -952,28 +1107,100 @@ components:
             - TRANSLITERERING
             - OVERSATTNING
       description: Översättningstyp, transliterering/normalisering/översättning av en runtext
+
     RunicInscriptionGeoPosition:
-      description: Objektrepresentation av en inskriftsbärares Geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
-      required:
-        - current
-        - signum
-        - uri
+      description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
       type: object
       properties:
-        signum:
-          type: string
-          description: Signum
-          example: Öl 4
-        uri:
-          type: object
-          description: Persistent identifierare för runinskriften.
-          example: https://kulturarvsdata.se/objekt/runtext/d778ec61-8f70-4105-ba93-e928328173e2
         current:
           # Anger inskriftsbärarens senaste kända (oftast nuvarande) position
           $ref: '#/components/schemas/Geometry'
-        orginal:
+        oldest_known:
           # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
+
+    MapIndex:
+      description: Objektrepresentation i "index" format av en inskriftsbärares signifikanta attribut.
+        Innehåller geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta.
+      type: object
+      properties:
+        inscription_id:
+          description: Anger identiteten (uuid) till runinskriften.
+          type: string
+          format: uuid
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+        uri:
+          description: Anger persistent identitet (uri) för runinskriften.
+          type: string
+          example: http://kulturarvsdata.se/uu/srdb/7b70c89a-c191-4d73-4455fd5dd2a7
+        signum:
+          description: Anger ett komplett signum bestående av signum1 + signum2.
+          type: string
+          example: Öl 10
+        parish:
+          description: Anger ev. namn på socken där inskriftsbäraren hittades.
+          type: string
+          nullable: true
+          example: Bro socken
+        current:
+          # Anger inskriftsbärarens senaste kända (oftast nuvarande) position
+          $ref: '#/components/schemas/Geometry'
+        oldest_known:
+          # Anger inskriftsbärarens äldsta kända position
+          $ref: '#/components/schemas/Geometry'
+
+    RunicType:
+      description: Anger vilka typer av runor som använts i inskriften.
+      type: object
+      properties:
+        type:
+          type: string
+          description: Anger typ av runinskrift.
+          nullable: true
+          example: Skiffer
+        category:
+          type: string
+          description: Anger kategori av runinskrift.
+          nullable: true
+          example: Spegelvända kvistrunor
+
+    SearchResult:
+      required:
+        - inscription
+      type: object
+      properties:
+        inscription:
+          type: array
+          description: Runinskrifter
+          items:
+            $ref: '#/components/schemas/RunicInscription'
+        found_words_index:
+          type: array
+          example:
+            - 0
+            - 4
+            - 6
+          items:
+            type: integer
+      description: Resultat av en sökfråga
+
+    SearchQuery:
+      required:
+        - query
+      type: object
+      properties:
+        query:
+          type: array
+          description: Textsökfråga
+          items:
+            $ref: '#/components/schemas/TextQueryGroup'
+        filter:
+          type: array
+          description: Filtrering
+          items:
+            $ref: '#/components/schemas/Selection'
+      description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning
+        i SRD
     SelectionGroup:
       required:
         - id
@@ -1020,119 +1247,71 @@ components:
           $ref: '#/components/schemas/SelectionItem'
       description: Kompletterande filter med urvalsgrupper
 
-    Geometry:
-      type: object
-      description: |
-        Objektrepresentation av en geografisk position uttryckt enligt GeoJSON[2016] specificatioenen. Se https://tools.ietf.org/html/rfc7946.
-        Notera att koordinatsystemet för angivna koordinater är uttryckta i WGS84 (EPSG:4326). Se: https://tools.ietf.org/html/rfc7946#section-4
-        "The coordinate reference system for all GeoJSON coordinates is a geographic coordinate reference system, using the World Geodetic System 1984 (WGS 84) [WGS84] datum,
-        with longitude and latitude units of decimal degrees.
-        This is equivalent to the coordinate reference system identified by the Open Geospatial Consortium (OGC) URN urn:ogc:def:crs:OGC::CRS84."
+    TextQueryGroup:
       required:
-        - coordinates
-        - type
+        - condition
+      type: object
       properties:
-        type:
-          description: |
-            Anger tillåtna koordinattyper för geometrin.
+        op:
           type: string
+          description: Anger logisk operator för användas när flera sökfrågor kombineras.
+            Första frågan i en TextQueryGroup behöver inte ha en logisk operator
           enum:
-            - Point
-          example: Point
-        coordinates:
-          description: |
-            Anger koordinater för geometrin. Exemplet uttryckt enligt longitude, latitude.
-            Se: https://tools.ietf.org/html/rfc7946#appendix-A.1
-            "Point coordinates are in x, y order (easting, northing for projected coordinates, longitude, and latitude for geographic coordinates)".
+            - AND
+            - OR
+            - NOT
+        condition:
           type: array
           items:
-            type: number
-            example: "18.31511, 57.159624"
+            $ref: '#/components/schemas/TextQuery'
+      description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
+    TextQuery:
+      required:
+        - matching_text
+        - proper_name_search
+      type: object
+      properties:
+        op:
+          type: string
+          description: Anger logisk operator för användas när flera sökfrågor kombineras.
+            Första frågan i en TextQuery behöver inte ha en logisk operator
+          enum:
+            - AND
+            - OR
+            - NOT
+        matching_text:
+          type: string
+          description: Söktext
+          example: þaiR
+        proper_name_search:
+          type: string
+          description: Anger hur/om sökning skall ske i egennamn
+          enum:
+            - INCLUDE
+            - EXCLUDE
+            - ONLY
+        translation_type_id:
+          type: string
+          description: Anger i vilken översättning sökningen skall ske
+          example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+      description: Sökfråga som används för att sätta villkor för textsökning i SRD
 
-    Proveniens:
+    Translation:
       type: object
-      description: Objektrepresentation av en runinskrifts lokaliseringsinformation.
+      description: Objektrepresentation av en transliterering.
       properties:
-# TODO - Uppsala Universitet, tydligen är det inte så enkelt i srd db att det bara finns en socken. Ni får ta fram lämplig struktur!
-# Förslag - nedan börjar vi med att endast ha en socken tills vidare.
-        socken:
-          description: Anger ev. namn på socken där inskriftsbäraren hittades.
+        translation:
+          description: Anger ev. översättning av texten
           type: string
           nullable: true
-          example: Bro socken
-        landskap:
-          description: Anger ev. namn på landskap där inskriftsbäraren hittades.
+          example: Bengt raised this stone...
+        transliteration_language:
+          description: Anger språket som översättningen är uttryckt i.
           type: string
           nullable: true
-          example: Västra götaland
-        harad:
-          description: Anger ev. namn på härad där inskriftsbäraren hittades.
-          type: string
-          nullable: true
-          example: Vallentuna hd
-        # TODO - Uppsala Universitet, tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
-        # Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
-        land:
-          description: Anger ev. namn på land där inskriftsbäraren hittades.
-          type: string
-          nullable: true
-          example: Sverige
-        plats:
-          description: Anger platsen för var inskriftsbäraren ursprungligen kommer från.
-          type: string
-          example: Resmo kyrka
+          example: Engelska
 
-    Korsform:
-      type: object
-      description: JSON-representation av korsformer. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
-      properties:
-        kors:
-          description: Array av kors.
-          type: array
-          items:
-            $ref: '#/components/schemas/Kors'
-    Kors:
-      type: object
-      description: JSON-representation av kors.
-      properties:
-        A:
-          description: Array av A.
-          type: array
-          items:
-            type: string
-          example:
-            - 1
-            - 2
-        B:
-          description: Array av B.
-          type: array
-          items:
-            type: string
-          example: []
-        C:
-          description: Array av C.
-          type: array
-          items:
-            type: string
-          example:
-            - 2
-        D:
-          description: Array av D.
-          type: array
-          items:
-            type: string
-          example:
-            - 3
-            - 4
-            - 5
-        E:
-          description: Array av E.
-          type: array
-          items:
-            type: string
-          example:
-            - 2
-    Runtext:
+    Runtext-old:
       type: object
       description: JSON-representation av en Runtext.
       properties:
@@ -1157,37 +1336,6 @@ components:
             <...-abi> they had the stones raised in memory of Randvé, their
             mother.
 
-    Error:
-      required:
-        - message
-        - path
-        - status
-        - timestamp
-      type: object
-      properties:
-        status:
-          type: integer
-          description: Http statuskod
-          example: 500
-        message:
-          type: string
-          description: Innehåller ett felmeddelande tänkt att presenteras för slutanvändare
-          example: Tekniskt fel, försök senare
-        exception:
-          type: string
-          description: Innehåller ett felmeddelande tänkt för tekniker vid felsökning
-          example: java.lang.NullPointerException
-        path:
-          type: string
-          description: Anger den resourcepath där felet uppstod
-          example: /selection/13/Test
-        timestamp:
-          type: string
-          description: Anger tidpunkten när felet inträffade. Tidpunkt angiven som
-            date-time, se RFC3339 (Internet Date/Time Format)
-          format: dateTime
-          example: 2019-01-04T23:59:60Z
-      description: Ett fel
   parameters:
     editionParameter:
       name: edition_id
