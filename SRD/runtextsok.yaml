@@ -714,7 +714,7 @@ components:
           enum:
             - dk
             - gb_sc
-            - no
+            - "no"
             - se
           example: se
         identifiers:
