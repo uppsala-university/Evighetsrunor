@@ -999,9 +999,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProfileStyle'
-        nmr_identifier:
-          #  Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
-          $ref: '#/components/schemas/Nmr'
+        nmr_identifiers:
+          description: Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
+          type: array
+          items:
+            $ref: '#/components/schemas/Nmr'
         notes:
           description: Fritextfält för beskrivning av inskriftsbäraren.
           type: array
