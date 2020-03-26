@@ -714,7 +714,7 @@ components:
           enum:
             - dk
             - gb_sc
-            - no
+            - "no" # Use quotes to avoid parsing no as false. https://github.com/swagger-api/swagger-parser/issues/1205
             - se
           example: se
         identifiers:
