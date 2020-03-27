@@ -581,8 +581,10 @@ components:
       type: object
       description: Objektrepresentation av ett kors. Beskriver hur korsets olika delar ser ut enligt ett schema skapat av Linn Lager.
       properties:
-        cross_form:
-          $ref: '#/components/schemas/CrossForm'
+        cross_forms:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrossForm'
 
     CrossForm:
       type: object
