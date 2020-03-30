@@ -981,8 +981,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RunicType'
-        runic_type_description:
-          $ref: '#/components/schemas/RunicTypeDescription'
+        runic_type_descriptions:
+          description: Anger fritextbeskrivningar av de typer av runor som använts i inskriften.
+          type: array
+          items:
+            $ref: '#/components/schemas/RunicTypeDescription'
         period:
           description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
             Är i praktiken även en grov tidsangivelse för inskriften.
