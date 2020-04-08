@@ -36,52 +36,63 @@ servers:
 # OM dataposter finns på flera språk, så finns det tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
 # Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
 
+# TODO Get Search - sorteringsordning? Antal träffar? fixa response objekt?
 paths:
   /signums:
     get:
       tags:
         - Enkel sökning
-      summary: Hämtar lista med signum
-      description: Hämta en lista med signum som kan användas vid enkel sökning (typeahead)
-        på signum
+      summary: Hämtar lista med signum och dess kopplade runinskrifts identitet.
+      description: |
+        Hämtar en lista med signum  och dess kopplade runinskrifts identitet (uuid). <br>
+        Lämpligt att användas för typeahead ändamål vid sökning/hämtning av signum. <br>
+        Notera att minst 2 tecken måste anges för att sökningen ska utföras. <br>
+        Sökträffar sorteras i fallande bokstavsordning enligt naturligt språk för en runforskare. Se responseobjekt för exempel.
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Anger id för önskad utgåva.
           required: true
           schema:
             type: string
+            example: 2020
         - name: matching_text
           in: query
-          description: Del av signum att matcha mot
+          description: Anger initala tecken i del av signum att matcha mot.
           schema:
             type: string
-        - name: page
-          in: query
-          description: Index för önskad resultatsida
-          schema:
-            type: number
-            format: number
-        - name: size
-          in: query
-          description: Storlek på sidor
-          schema:
-            type: number
-            format: number
-        - name: sort
-          in: query
-          description: Attribut som man vill använda föra att sortera svaret, tex "sort=id",
-            eller "sort=id,desc" om man vill ha svaret i fallande ordning.
-          schema:
-            type: string
-            format: sort
+            minLength: 2
+            example: "U "
       responses:
         200:
-          description: En lista med signum
+          description: |
+            En sorterad lista med signum returneras. <br>
+            Signumen sorteras i fallande bokstavsordning enligt naturligt språk för en runforskare. <br>
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PagedSignumResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SignumResponse'
+                example:
+                  - Öl 1: ccf0a7f9-1f4c-...
+                  - Öl 2: ccf0a7f9-1f4c-...
+                  - Öl 2b: ccf0a7f9-1f4c-...
+                  - Öl 10: ccf0a7f9-1f4c-...
+                  - Öl ANF1937;184: ccf0a7f9-...
+                  - Öl ANF1937;185: ccf0a7f9-...
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: (Not found). Inga poster hittades.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
@@ -92,43 +103,60 @@ paths:
     get:
       tags:
         - Enkel sökning
-      summary: Hämtar lista med platser
-      description: Hämta en lista med platser som kan användas vid enkel sökning (typeahead)
-        på plats
+      summary: Hämtar lista med places (platser) och identiteter till runinskrifter som är kopplade till platsen.
+      description: |
+        Hämtar lista med places (platser) och de identiteter till runinskrifter som är kopplade till platsen. <br>
+        Lämpligt att användas för typeahead ändamål vid sökning/hämtning av signum. <br>
+        Notera att minst 2 tecken måste anges för att sökningen ska utföras. <br>
+        Sökträffar sorteras i fallande bokstavsordning.
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Anger id för önskad utgåva.
           required: true
           schema:
             type: string
+            example: 2020
         - name: matching_text
           in: query
-          description: Del av namn på plats att matcha mot
+          description: Anger initala tecken i del av namn på plats att matcha mot.
           schema:
             type: string
+            minLength: 2
+            example: "Resmo "
       responses:
         200:
-          description: En lista med platser
+          description: |
+            En sorterad lista med namn på platser returneras. <br>
+            Platserna sorteras i fallande bokstavsordning.
           content:
             application/json:
               schema:
                 type: array
-                example:
-                  - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
-                    name: Abrahamstorp
-                  - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
-                    name: Ackarby
-                  - id: b70ec612-cef6-446d-afc0-4e3387804842
-                    name: '...'
                 items:
-                  $ref: '#/components/schemas/SelectionItem'
+                  $ref: '#/components/schemas/PlaceResponse'
+                example:
+                  - Resmo: ccf0a7f9-1f4c-...
+                  - Resmo kyrka: ccf0a7f9-1f4c-...
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: (Not found). Inga poster hittades.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /selection/groups:
     get:
       tags:
@@ -269,7 +297,12 @@ paths:
       tags:
         - Enkel sökning
       summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
-      description: Söker efter runtexter med del av plats eller signum
+      description: |
+        Söker efter runtexter med del av plats eller signum. <br>
+        Sökresultat sorteras i fallande bokstavsordning enligt naturligt språk. <br>
+        Exempel 1: Öl 1, Öl 2, Öl 10. <br>
+        Exempel 2: Ög 35, Ög 36, Ög 36B, Ög 37, Ög. <br>
+        Exempel 3: .... Ög 247, Ög 248, Ög ANF1937;184, Ög ANF1937;185 .... <br>
       parameters:
         - name: edition_id
           in: query
@@ -277,6 +310,7 @@ paths:
           required: true
           schema:
             type: string
+            example: "2020"
         - name: matching_text
           in: query
           description: Söksträng
@@ -300,7 +334,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RunicInscription'
+                  $ref: '#/components/schemas/RunicInscriptionIndex'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
@@ -385,11 +419,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /inscriptions:
     get:
       tags:
         - Runtexter
-      summary: Hämtar en lista med runinskrifter
+      summary: Hämtar en lista med runinskrifter.
       description: Hämtar en lista med runinskrifter för en viss utgåva
       parameters:
         - name: edition_id
@@ -398,6 +433,18 @@ paths:
           required: true
           schema:
             type: string
+            example: 2020
+        - name: inscription_id
+          in: query
+          description: |
+            Anger ev. identitet/er (uuid) för runinskrifter som ska hämtas.
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+              example:
+                - ccf0a7f9-1f4c-421f-a321-0e36daea43eb, cfc0a7f9-1f4c-421f-a321-0e36daea56be
         - name: page
           in: query
           description: Index för önskad resultatsida
@@ -436,13 +483,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
+
   /inscriptions/{id}:
     get:
       tags:
         - Runtexter
-      summary: Hämtar en runinskrift med hjälp av signum eller URI
-      description: Hämtar en runinskrift med hjälp av signum eller URI
+      summary: Hämtar en runinskrift med hjälp av uuid.
+      description: Hämtar en runinskrift med hjälp av uuid.
       parameters:
         - in: path
           name: id
@@ -481,6 +528,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /editions:
     get:
       tags:
@@ -754,53 +802,6 @@ components:
           type: string
           example: sten
 
-    PagedSignumResponse:
-      type: object
-      properties:
-        signum:
-          description: Innehåller lista av framsökta signum.
-          type: array
-          items:
-            type: string
-          example:
-            - Öl 4 $
-            - Öl Fv1911;274 B $
-            - '...'
-        #          items:
-        #            $ref: '#/components/schemas/Signum'
-        total_pages:
-          type: integer
-          description: Totalt antal sidor som kan hämtas
-          example: 84
-        total_elements:
-          type: integer
-          description: Totalt antal objekt som kan hämtas
-          example: 8345
-        last:
-          type: boolean
-          description: Anger om aktuell sida är den sista
-          example: false
-        sort:
-          type: string
-          description: Anger vilken sortering som använts
-          example: sort=id
-        first:
-          type: boolean
-          description: Anger om aktuell sida är den första
-          example: true
-        number_of_elements:
-          type: integer
-          description: Antal objekt i aktuellt svar
-          example: 100
-        size:
-          type: integer
-          description: Anger antal objekt per sida
-          example: 100
-        number:
-          type: integer
-          description: Sidnummer
-          example: 0
-      description: Paginerat svar med signum
     PagedRunicInscriptionResponse:
       type: object
       properties:
@@ -1021,9 +1022,9 @@ components:
           items:
             $ref: '#/components/schemas/RunicText'
         ornamental:
-            description: Anger huruvida objektet är ornamentantalt eller ej. Om sant - så finns inga runor, bara ornament.
-            type: boolean
-            example: true
+          description: Anger huruvida objektet är ornamentantalt eller ej. Om sant - så finns inga runor, bara ornament.
+          type: boolean
+          example: true
         image_links:
           description: Innehåller array av URL:er till bilder av objektet. Url:erna finns lagrade i SRD databas och skördas ej till K-samsök.
           type: array
@@ -1041,6 +1042,81 @@ components:
             - 'Fv 1975:170'
             - 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
             - 'Andersson 1998b'
+
+    RunicInscriptionIndex:
+      description: Objektrepresentation av ett sökresultat från en s.k. 'Enkel sökning' efter signum.
+        Objektet består endast av s.k. signifikanta attribut.
+      type: object
+      properties:
+        inscription_id:
+          type: string
+          format: uuid
+          description: Anger identiteten (uuid) till runinskriften i SNRD.
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+        signum1:
+          description: Anger den första identitetsdelen för runinskriften, s.k signum.
+            Platsbaserad. Oftast landskapskoden där runstenen hittades. Sätts samman med attribut 'signum 2'
+          type: string
+          example: Öl
+        signum2:
+          description: Anger den andra identitetssdelen för runinskriften, s.k signum.
+            Anger oftast runinskriftens numrering inom platsbaserade delen. Sätts samman med attribut 'signum 1'
+          type: string
+          example: 10
+        extant:
+          description: Anger om inskriftsbäraren existerar eller ej.
+          type: boolean
+          example: true
+        placement:
+          description: Anger var inskriftsbäraren finns belägen.
+          type: string
+          nullable: true
+          example: Kalmar läns museum (KLM 24962)
+        original_location:
+          $ref: '#/components/schemas/OriginalLocation'
+        position:
+          # Anger geografisk information om inskriftsbärarens position.
+          $ref: '#/components/schemas/RunicInscriptionGeoPosition'
+        provenance:
+          $ref: '#/components/schemas/Provenance'
+        crosses:
+          description: Array av kors.
+          type: array
+          items:
+            $ref: '#/components/schemas/Cross'
+        runic_types:
+          description: Anger vilka typer av runor som använts i inskriften.
+          type: array
+          items:
+            $ref: '#/components/schemas/RunicType'
+        runic_type_descriptions:
+          description: Anger fritextbeskrivningar av de typer av runor som använts i inskriften.
+          type: array
+          items:
+            $ref: '#/components/schemas/RunicTypeDescription'
+        period:
+          description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
+            Är i praktiken även en grov tidsangivelse för inskriften.
+          type: string
+          nullable: true
+          example: Vikingatid
+        material:
+          $ref: '#/components/schemas/RunicMaterial'
+        notes:
+          description: Fritextfält för beskrivning av inskriftsbäraren.
+          type: array
+          items:
+            type: string
+          example: Parsten till Sö 35.
+        runic_texts:
+          description: Array of translations of the runicinscription.
+          type: array
+          items:
+            $ref: '#/components/schemas/RunicText'
+        ornamental:
+          description: Anger huruvida objektet är ornamentantalt eller ej. Om sant - så finns inga runor, bara ornament.
+          type: boolean
+          example: true
 
     RunicMaterial:
       type: object
@@ -1061,25 +1137,25 @@ components:
       type: object
       description: Objektrepresentation av en inskriftsversion.
       properties:
-       reading:
+        reading:
           description: Anger läsningen av texten
           type: string
           example: '...-abi · þaiR --tu · raisa · stein- · eftiR · rantui · moþor sina'
-       reference:
-         description: Anger bokstav som identifierar vilken alternativ tolkning olika runologer har haft.
-         type: string
-         nullable: true
-         example: 'P'
-       interpretations:
-         description: Array av runinskriftens tolkningar. "Snygga till stavningen".
-         type: array
-         items:
-           $ref: '#/components/schemas/Interpretation'
-       translations:
-         description: Array av runinskriftens översättningar.
-         type: array
-         items:
-           $ref: '#/components/schemas/Translation'
+        reference:
+          description: Anger bokstav som identifierar vilken alternativ tolkning olika runologer har haft.
+          type: string
+          nullable: true
+          example: 'P'
+        interpretations:
+          description: Array av runinskriftens tolkningar. "Snygga till stavningen".
+          type: array
+          items:
+            $ref: '#/components/schemas/Interpretation'
+        translations:
+          description: Array av runinskriftens översättningar.
+          type: array
+          items:
+            $ref: '#/components/schemas/Translation'
 
     RunicTextTranslationType:
       required:
@@ -1156,6 +1232,20 @@ components:
         oldest_known:
           # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
+
+    PlaceResponse:
+      description: Objektrepresentation av en plats (place) och runinskriftsidentiteter avsett för "typeahead" ändamål.
+      type: object
+      properties:
+        place:
+          description: Innehåller namn på plats.
+          type: string
+          example: "Resmo kyrka"
+        place_id:
+          description: Anger identiteten (uuid) för platsen.
+          type: string
+          format: uuid
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
 
     RunicType:
       description: Anger vilka typer av runor som använts i inskriften.
@@ -1268,6 +1358,20 @@ components:
           $ref: '#/components/schemas/SelectionItem'
       description: Kompletterande filter med urvalsgrupper
 
+    SignumResponse:
+      description: Objektrepresentation av signum och runinskriftsidentiteter avsett för "typeahead" ändamål.
+      type: object
+      properties:
+        signum:
+          description: Innehåller ett sammansatt signum bestående av signum 1 och signum 2.
+          type: string
+          example: "Öl 10"
+        inscription_id:
+          description: Anger identiteten (uuid) till runinskriften.
+          type: string
+          format: uuid
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+
     TextQueryGroup:
       required:
         - condition
@@ -1331,3 +1435,19 @@ components:
           type: string
           nullable: true
           example: Engelska
+
+    RunicInscriptionFetchPost:
+      description: Objektrepresentation för att hämta lista av runicInscriptions.
+      type: object
+      required:
+        - lamning_id
+      properties:
+        lamning_id:
+          description: Anger lämningens identitet (uuid).
+          type: array
+          items:
+            type: string
+            format: uuid
+          example:
+            - ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+            - 4dac7ed8-d896-4ef0-bb2f-69eaea25fd64
