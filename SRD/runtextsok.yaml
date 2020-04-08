@@ -1237,12 +1237,12 @@ components:
       description: Objektrepresentation av en plats (place) och runinskriftsidentiteter avsett för "typeahead" ändamål.
       type: object
       properties:
-        signum:
+        place:
           description: Innehåller namn på plats.
           type: string
           example: "Resmo kyrka"
-        inscription_id:
-          description: Anger identiteten (uuid) till runinskriften.
+        place_id:
+          description: Anger identiteten (uuid) för platsen.
           type: string
           format: uuid
           example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
