@@ -32,17 +32,12 @@ servers:
 #### Utestående frågor #####
 # Sök efter TODO i detta dokument. Där finns en utestående fråga.
 
-# TODO 1: RAÄ har krav på sig att själva gui:et ska vara tvåspråkigt. Men ska själva datat ska väl inte vara flerspråkigt?! Måste utredas vad som gäller! Att: Rickard
-# OM dataposter finns på flera språk, så finns det tydligen finns det ISO koder över namn på länder. RAÄ:s behov är att kunna skriva ut landsnamnet i klartext i gui:et.
-# Man skulle kunna tänka sig använda accept header "Accept-Language" generellt i api:et för returnera data på olika språk där det stöds, i det här fallet landsnamnet på "rätt språk".
-
-# TODO Get Search - sorteringsordning? Antal träffar? fixa response objekt?
 paths:
   /signums:
     get:
       tags:
         - Enkel sökning
-      summary: Hämtar lista med signum och dess kopplade runinskrifts identitet.
+      summary: Hämtar lista med signum och dess kopplade runinskrifterss identiteter.
       description: |
         Hämtar en lista med signum  och dess kopplade runinskrifts identitet (uuid). <br>
         Lämpligt att användas för typeahead ändamål vid sökning/hämtning av signum. <br>
@@ -58,7 +53,7 @@ paths:
             example: 2020
         - name: matching_text
           in: query
-          description: Anger initala tecken i del av signum att matcha mot.
+          description: Anger initala tecken i de signum som eftersöks. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
           schema:
             type: string
             minLength: 2
@@ -119,7 +114,7 @@ paths:
             example: 2020
         - name: matching_text
           in: query
-          description: Anger initala tecken i del av namn på plats att matcha mot.
+          description: Anger initala tecken i namnet på plats som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
           schema:
             type: string
             minLength: 2
@@ -299,6 +294,7 @@ paths:
       summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
       description: |
         Söker efter runtexter med del av plats eller signum. <br>
+        Om inga sökresultat hittades returneras en tom array. <br>
         Sökresultat sorteras i fallande bokstavsordning enligt naturligt språk. <br>
         Exempel 1: Öl 1, Öl 2, Öl 10. <br>
         Exempel 2: Ög 35, Ög 36, Ög 36B, Ög 37, Ög. <br>
@@ -335,6 +331,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RunicInscriptionIndex'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
@@ -1063,60 +1065,13 @@ components:
             Anger oftast runinskriftens numrering inom platsbaserade delen. Sätts samman med attribut 'signum 1'
           type: string
           example: 10
-        extant:
-          description: Anger om inskriftsbäraren existerar eller ej.
-          type: boolean
-          example: true
-        placement:
-          description: Anger var inskriftsbäraren finns belägen.
-          type: string
-          nullable: true
-          example: Kalmar läns museum (KLM 24962)
-        original_location:
-          $ref: '#/components/schemas/OriginalLocation'
-        position:
-          # Anger geografisk information om inskriftsbärarens position.
-          $ref: '#/components/schemas/RunicInscriptionGeoPosition'
         provenance:
           $ref: '#/components/schemas/Provenance'
-        crosses:
-          description: Array av kors.
-          type: array
-          items:
-            $ref: '#/components/schemas/Cross'
-        runic_types:
-          description: Anger vilka typer av runor som använts i inskriften.
-          type: array
-          items:
-            $ref: '#/components/schemas/RunicType'
-        runic_type_descriptions:
-          description: Anger fritextbeskrivningar av de typer av runor som använts i inskriften.
-          type: array
-          items:
-            $ref: '#/components/schemas/RunicTypeDescription'
-        period:
-          description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
-            Är i praktiken även en grov tidsangivelse för inskriften.
-          type: string
-          nullable: true
-          example: Vikingatid
-        material:
-          $ref: '#/components/schemas/RunicMaterial'
-        notes:
-          description: Fritextfält för beskrivning av inskriftsbäraren.
-          type: array
-          items:
-            type: string
-          example: Parsten till Sö 35.
         runic_texts:
           description: Array of translations of the runicinscription.
           type: array
           items:
             $ref: '#/components/schemas/RunicText'
-        ornamental:
-          description: Anger huruvida objektet är ornamentantalt eller ej. Om sant - så finns inga runor, bara ornament.
-          type: boolean
-          example: true
 
     RunicMaterial:
       type: object
