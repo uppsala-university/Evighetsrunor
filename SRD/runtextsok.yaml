@@ -33,11 +33,11 @@ servers:
 # Sök efter TODO i detta dokument. Där finns en utestående fråga.
 
 paths:
-  /signums:
+  /signa:
     get:
       tags:
         - Enkel sökning
-      summary: Hämtar lista med signum och dess kopplade runinskrifterss identiteter.
+      summary: Hämtar lista med signum och dess kopplade runinskrifters identiteter.
       description: |
         Hämtar en lista med signum  och dess kopplade runinskrifts identitet (uuid). <br>
         Lämpligt att användas för typeahead ändamål vid sökning/hämtning av signum. <br>
@@ -114,7 +114,7 @@ paths:
             example: 2020
         - name: matching_text
           in: query
-          description: Anger initala tecken i namnet på plats som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
+          description: Anger initiala tecken i namnet på plats som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
           schema:
             type: string
             minLength: 2
