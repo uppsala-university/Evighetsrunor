@@ -291,9 +291,9 @@ paths:
     get:
       tags:
         - Enkel sökning
-      summary: Enkel sökning. Sök efter runtexter med del av plats eller signum
+      summary: Enkel sökning. Sök efter runinskrifter med platsnamn eller signum.
       description: |
-        Söker efter runtexter med del av plats eller signum. <br>
+        Enkel sökning. Sök efter runinskrifter med platsnamn eller signum. <br>
         Om inga sökresultat hittades returneras en tom array. <br>
         Sökresultat sorteras i fallande bokstavsordning enligt naturligt språk. <br>
         Exempel 1: Öl 1, Öl 2, Öl 10. <br>
@@ -313,6 +313,7 @@ paths:
           required: true
           schema:
             type: string
+            example: "'Resmo kyrka' eller 'Öl 10'"
         - name: search_field
           in: query
           description: Sökfält
