@@ -68,7 +68,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SignumResponse'
+                  $ref: '#/components/schemas/Signum'
                 example:
                   - Öl 1: ccf0a7f9-1f4c-...
                   - Öl 2: ccf0a7f9-1f4c-...
@@ -1314,7 +1314,7 @@ components:
           $ref: '#/components/schemas/SelectionItem'
       description: Kompletterande filter med urvalsgrupper
 
-    SignumResponse:
+    Signum:
       description: Objektrepresentation av signum och runinskriftsidentiteter avsett för "typeahead" ändamål.
       type: object
       properties:
@@ -1391,19 +1391,3 @@ components:
           type: string
           nullable: true
           example: Engelska
-
-    RunicInscriptionFetchPost:
-      description: Objektrepresentation för att hämta lista av runicInscriptions.
-      type: object
-      required:
-        - lamning_id
-      properties:
-        lamning_id:
-          description: Anger lämningens identitet (uuid).
-          type: array
-          items:
-            type: string
-            format: uuid
-          example:
-            - ccf0a7f9-1f4c-421f-a321-0e36daea43eb
-            - 4dac7ed8-d896-4ef0-bb2f-69eaea25fd64
