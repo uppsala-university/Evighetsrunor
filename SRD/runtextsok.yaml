@@ -1388,34 +1388,6 @@ components:
           items:
             $ref: '#/components/schemas/Selection'
 
-    SelectionGroup:
-      description: Anger de möjliga urvalsgrupper som en avancerad sökning kan göras utifrån.
-      required:
-#        - id
-        - name
-      type: object
-      properties:
-#        id:
-#          description: Anger identiteten för urvalsgruppen
-#          type: string
-#          example: b86b72cb-bc22-45fc-90cb-eaf213d3aaf9
-        name:
-          description: Anger logiskt namn på urvalsgruppen.
-          type: string
-          enum:
-            - LAND
-            - LANDSKAP
-            - HARAD
-            - SOCKEN
-            - LAN
-            - KOMMUN
-            - FOREMAL
-            - RUNOLOGISK_PERIOD
-            - PROFILSTIL
-            - RISTARE
-            - BRAKTEATTYP
-          example: SOCKEN
-
     SelectionItem:
       description: Anger ett urval (t ex socken Bro).
       required:
@@ -1530,7 +1502,6 @@ components:
           description: Anger logisk operator för användas när flera sökfrågor kombineras.
             Första frågan i en TextQuery behöver inte ha en logisk operator
           enum:
-            - AND
             - OR
             - NOT
         year:
@@ -1552,7 +1523,6 @@ components:
           description: Anger logisk operator för användas när flera sökfrågor kombineras.
             Första frågan i en TextQuery behöver inte ha en logisk operator
           enum:
-            - AND
             - OR
             - NOT
         from_year:
