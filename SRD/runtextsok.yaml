@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-SAMSÖK
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.5
+  version: 0.9.7
 servers:
   - description: Uppsala Universitet Evighetsrunor API - TEST
     url: http://runor.test.uu.se/rest/
@@ -157,8 +157,8 @@ paths:
       tags:
         - Avancerad sökning
       summary: Hämtar lista med urvalsgrupper
-      description: Hämtar lista med urvalsgrupper att användas när man sätter filtervillkor
-        för en avancerad sökning
+      description: Hämtar lista med urvalsgrupper att användas när man sätter filtervillkor för en avancerad sökning.
+        Dessa används sedan som input till exempelvis tjänsten /selection/groups/{group_id} mfl.
       parameters:
         - name: edition_id
           in: query
@@ -173,23 +173,23 @@ paths:
             application/json:
               schema:
                 type: array
-                example:
-                  - id: 161ab23e-7566-43a0-9dbe-c7f237f27765
-                    name: Plats
-                  - id: d3c41141-ef42-4ef3-9cbb-3d49fa6acffe
-                    name: Socken
-                  - id: 30ba8d99-f27b-48fc-8048-7892eb3a0fbc
-                    name: Härrad
-                  - id: b95dc24b-a1f6-4310-8a9e-3d0264f0f53e
-                    name: '...'
                 items:
-                  $ref: '#/components/schemas/SelectionGroup'
+                  type: string
+                #  $ref: '#/components/schemas/SelectionGroup'
+                example: "[LAND, LANDSKAP, HARAD, SOCKEN, LAN, KOMMUN, FOREMAL, RUNOLOGISK_PERIOD, PROFILSTIL, RISTARE, BRAKTEATYP]"
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /selection/groups/{group_id}:
     get:
       tags:
@@ -206,33 +206,51 @@ paths:
             type: string
         - name: group_id
           in: path
-          description: Id för urvalsgrupp
+          description: Id för urvalsgrupp.
           required: true
           schema:
             type: string
+            example: 'LAND, LANDSKAP, SOCKEN, ..., RUNOLOGISK_PERIOD, RAK, INGULV, A'
         - name: matching_text
           in: query
-          description: Del av namn på urval att matcha mot
+          description: Anger initiala tecken i del av namn på urval som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
           schema:
             type: string
+            minLength: 2
+            example: "Sve"
       responses:
         200:
-          description: En lista med urval
+          description: En lista med urval.
           content:
             application/json:
               schema:
                 type: array
                 example:
                   - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
-                    name: Abrahamstorp
+                    name: Sverige
+                    has_children: false
                   - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
-                    name: Ackarby
+                    name: Bok
+                    has_children: false
+                  - id: b70ec612-cef6-446d-afc0-4e3387804858
+                    name: 'Urnordisk/vikingatid'
+                    has_children: false
+                  - id: c95ec612-cef6-446d-afc0-4e3387804752
+                    name: 'RAK'
+                    has_children: false
                   - id: b70ec612-cef6-446d-afc0-4e3387804842
                     name: '...'
+                    has_children: false
                 items:
                   $ref: '#/components/schemas/SelectionItem'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         404:
-          description: (Not found). Gruppen saknas
+          description: (Not found). Gruppen saknas.
           content:
             application/json:
               schema:
@@ -248,11 +266,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /selection/groups/{group_id}/{subgroup_id}:
+    get:
+      tags:
+        - Avancerad sökning
+      summary: Hämtar lista med urval där både grupp och subgrupp kan anges.
+      description: Hämtar lista med urval för en urvalsgrupp att användas när man
+        sätter filtervillkor för en avancerad sökning TODO
+      parameters:
+        - name: edition_id
+          in: query
+          description: Id för önskad utgåva
+          required: true
+          schema:
+            type: string
+        - name: group_id
+          in: path
+          description: Id för urvalsgrupp.
+          required: true
+          schema:
+            type: string
+            example: 'MATERIALTYP, KORSFORM'
+        - name: subgroup_id
+          in: path
+          description: Anger subgroupId för urvalsgruppen.
+          required: true
+          schema:
+            type: string
+            example: 'BEN/HORN, METALL, STEN, ... A ,B , C, ...'
+        - name: matching_text
+          in: query
+          description: Anger initiala tecken i del av namn på urval som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
+          schema:
+            type: string
+            minLength: 1
+            example: "Ben/H"
+      responses:
+        200:
+          description: En lista med urval.
+          content:
+            application/json:
+              schema:
+                type: array
+                example:
+                  - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
+                    name: Sverige
+                  - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
+                    name: Bok
+                  - id: b70ec612-cef6-446d-afc0-4e3387804858
+                    name: 'Urnordisk/vikingatid'
+                  - id: c95ec612-cef6-446d-afc0-4e3387804752
+                    name: 'RAK'
+                  - id: b70ec612-cef6-446d-afc0-4e3387804842
+                    name: '...'
+                items:
+                  $ref: '#/components/schemas/SelectionItem'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: (Not found). Gruppen saknas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                status: 404
+                message: Gruppen saknas
+                path: /selection/12/test
+                timestamp: 1990-12-31T23:59:60Z
+        500:
+          description: (Internal server error). Ett oväntat fel inträffade.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /translationtypes:
     get:
       tags:
         - Avancerad sökning
-      summary: Hämtar alla översättningstyper
+      summary: Hämtar alla möjliga översättningstyper som en sökning kan göras utifrån.
       description: Översättningstyper att använda när en sökfråga sätts samman
       parameters:
         - name: edition_id
@@ -281,6 +379,12 @@ paths:
                     method: OVERSATTNING
                 items:
                   $ref: '#/components/schemas/RunicTextTranslationType'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
@@ -427,6 +531,7 @@ paths:
     get:
       tags:
         - Runtexter
+        - Not implemented
       summary: Hämtar en lista med runinskrifter.
       description: Hämtar en lista med runinskrifter för en viss utgåva
       parameters:
@@ -568,6 +673,7 @@ paths:
     get:
       tags:
         - Utgåva
+        - Not implemented
       summary: Hämtar all data i en utgåva
       description: 'Hämtar en fil som innehåller all data i en utgåva av SRD. TODO bestämma vilket format som returneras.'
       parameters:
@@ -725,8 +831,7 @@ components:
         This is equivalent to the coordinate reference system identified by the Open Geospatial Consortium (OGC) URN urn:ogc:def:crs:OGC::CRS84."
       properties:
         type:
-          description: |
-            Anger tillåtna koordinattyper för geometrin.
+          description: Anger tillåtna koordinattyper för geometrin.
           type: string
           enum:
             - Point
@@ -1121,40 +1226,45 @@ components:
         - name
         - proper_name_searchable
       type: object
+      description: Översättningstyp, transliterering/normalisering/översättning av en runtext.
       properties:
         id:
+          description: Anger identiteten (uuid) för översättningstypen.
           type: string
-          description: Id för översättningstypen
           example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
         name:
-          type: string
           description: Namn på översättningstypen
+          type: string
           example: Fornvästnordiska
         proper_name_searchable:
-          type: boolean
           description: Anger om texter av denna översättningstyp har sökbara egennamn
+          type: boolean
           example: true
         is_complete:
-          type: boolean
           description: Anger om texter av denna översättningstyp är kompletta
+          type: boolean
           example: true
         method:
-          type: string
           description: Anger översättningsmetod
+          type: string
           example: NORMALISERING
           enum:
             - NORMALISERING
             - TRANSLITERERING
             - OVERSATTNING
-      description: Översättningstyp, transliterering/normalisering/översättning av en runtext
 
     RunicInscriptionGeoPosition:
       description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
       type: object
       properties:
+#        current:
+#          # Anger inskriftsbärarens senaste kända (oftast nuvarande) position.
+#          $ref: '#/components/schemas/Geometry'
         current:
-          # Anger inskriftsbärarens senaste kända (oftast nuvarande) position
-          $ref: '#/components/schemas/Geometry'
+          description: Anger inskriftsbärarens senaste kända (oftast nuvarande) position. Notera att objektet kan vara null om positionen saknas!
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Geometry'
         oldest_known:
           # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
@@ -1252,6 +1362,7 @@ components:
       description: Resultat av en sökfråga
 
     SearchQuery:
+      description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning i SRD
       required:
         - query
       type: object
@@ -1261,44 +1372,46 @@ components:
           description: Textsökfråga
           items:
             $ref: '#/components/schemas/TextQueryGroup'
+        timeinterval:
+          description: Anger sökvillkor baserade på datering inom ett intervall.
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeInterval'
+        year:
+          description: Anger sökvillkor baserat på årtal.
+          type: array
+          items:
+            $ref: '#/components/schemas/Year'
         filter:
           type: array
           description: Filtrering
           items:
             $ref: '#/components/schemas/Selection'
-      description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning
-        i SRD
-    SelectionGroup:
-      required:
-        - id
-        - name
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identitet för urvalsgruppen
-          example: b86b72cb-bc22-45fc-90cb-eaf213d3aaf9
-        name:
-          type: string
-          description: Namn på urvalsgruppen
-          example: Socken
-      description: Urvalsgrupp (tex Föremål, Korsform, Material etc)
+
     SelectionItem:
+      description: Anger ett urval (t ex socken Bro).
       required:
         - id
         - name
+        - hasChildren
       type: object
       properties:
         id:
           type: string
-          description: Identitet för urvalet
+          description: Anger identiteten (uuid) för urvalet
           example: c387aad1-9b4b-4c8c-ad0d-0bb4eaf605d6
         name:
           type: string
-          description: Namn på urval
-          example: Bro
-      description: Ett urval (tex socken Bro)
+          description: Anger namnet på urvalet (lämpligt för presentation).
+          example: Bro (Gotland)
+        hasChildren:
+          description: Anger om urvalsgruppen har ytterligare djup eller ej. True innebär att det finns ytterligare underliggande nivåer.
+            Dessa attribut kan då undersökas vidare.
+          type: boolean
+          example: true
+
     Selection:
+      description: Kompletterande filter med urvalsgrupper
       required:
         - item
         - op
@@ -1309,10 +1422,10 @@ components:
           description: Logisk operator att användas när filter kombineras
           enum:
             - AND
+            - OR
             - NOT
         item:
           $ref: '#/components/schemas/SelectionItem'
-      description: Kompletterande filter med urvalsgrupper
 
     Signum:
       description: Objektrepresentation av signum och runinskriftsidentiteter avsett för "typeahead" ändamål.
@@ -1346,6 +1459,7 @@ components:
           items:
             $ref: '#/components/schemas/TextQuery'
       description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
+
     TextQuery:
       required:
         - matching_text
@@ -1376,6 +1490,53 @@ components:
           description: Anger i vilken översättning sökningen skall ske
           example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
       description: Sökfråga som används för att sätta villkor för textsökning i SRD
+
+    Year:
+      description: Anger årtal för att kunna uttrycka frågor av typen "sök runinskrifter daterade till år 1066".
+      required:
+        - year
+      type: object
+      properties:
+        op:
+          type: string
+          description: Anger logisk operator för användas när flera sökfrågor kombineras.
+            Första frågan i en TextQuery behöver inte ha en logisk operator
+          enum:
+            - OR
+            - NOT
+        year:
+          type: integer
+          description: Anger årtalet.
+          minLength: 1
+          maxLength: 4
+          example: 1066
+
+    TimeInterval:
+      description: Anger årtalsbaserat intervall för att kunna uttrycka frågor av typen "sök runinskrifter daterade inom intervallet år 800-900".
+      required:
+        - from_year
+        - to_year
+      type: object
+      properties:
+        op:
+          type: string
+          description: Anger logisk operator för användas när flera sökfrågor kombineras.
+            Första frågan i en TextQuery behöver inte ha en logisk operator
+          enum:
+            - OR
+            - NOT
+        from_year:
+          type: integer
+          description: Anger start årtal för intervallet. Angivet årtal inkluderas i sökningen.
+          minLength: 1
+          maxLength: 4
+          example: 800
+        to_year:
+          type: integer
+          description: Anger slut årtal för intervallet. Angivet årtal inkluderas i sökningen.
+          minLength: 1
+          maxLength: 4
+          example: 900
 
     Translation:
       type: object
