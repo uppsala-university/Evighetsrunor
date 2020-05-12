@@ -158,6 +158,7 @@ paths:
         - Avancerad sökning
       summary: Hämtar lista med urvalsgrupper
       description: Hämtar lista med urvalsgrupper att användas när man sätter filtervillkor för en avancerad sökning.
+        Dessa används sedan som input till exempelvis tjänsten /selection/groups/{group_id} mfl.
       parameters:
         - name: edition_id
           in: query
@@ -1534,7 +1535,7 @@ components:
             - NOT
         year:
           type: integer
-          description: Anger start årtal för intervallet.
+          description: Anger årtalet.
           minLength: 1
           maxLength: 4
           example: 1066
@@ -1556,13 +1557,13 @@ components:
             - NOT
         from_year:
           type: integer
-          description: Anger start årtal för intervallet.
+          description: Anger start årtal för intervallet. Angivet årtal inkluderas i sökningen.
           minLength: 1
           maxLength: 4
           example: 800
         to_year:
           type: integer
-          description: Anger slut årtal för intervallet.
+          description: Anger slut årtal för intervallet. Angivet årtal inkluderas i sökningen.
           minLength: 1
           maxLength: 4
           example: 900
