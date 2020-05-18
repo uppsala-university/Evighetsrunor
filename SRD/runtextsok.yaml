@@ -5,12 +5,12 @@ info:
     forskningsplattform för runor inom projektet Evighetsrunor. API:et används för
     att hitta och söka i runtexter i SRD. Sökresultaten innehåller endast grundinformationen
     om runtexterna (id:n, text och geografiska koordinater). Ytterligare metadata
-    runt runtexterna, bärarobjekt samt kopplad information hämtas via K-SAMSÖK
+    runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.7
+  version: 0.9.8
 servers:
-  - description: Uppsala Universitet Evighetsrunor API - TEST
+  - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
 #  - description: SwaggerHub API Auto Mocking
 
@@ -98,10 +98,10 @@ paths:
     get:
       tags:
         - Enkel sökning
-      summary: Hämtar lista med places (platser) och identiteter till runinskrifter som är kopplade till platsen.
+      summary: Hämtar lista med platser (places) för angivet sökvillkor.
       description: |
-        Hämtar lista med places (platser) och de identiteter till runinskrifter som är kopplade till platsen. <br>
-        Lämpligt att användas för typeahead ändamål vid sökning/hämtning av signum. <br>
+        Hämtar lista med platser (places) för angivet sökvillkor.<br>
+        Lämpligt att användas som typeahead för att kunna göra sökningar efter signum. <br>
         Notera att minst 2 tecken måste anges för att sökningen ska utföras. <br>
         Sökträffar sorteras i fallande bokstavsordning.
       parameters:
@@ -129,10 +129,8 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PlaceResponse'
-                example:
-                  - Resmo: ccf0a7f9-1f4c-...
-                  - Resmo kyrka: ccf0a7f9-1f4c-...
+                  type: string
+                example: "[Fors, Fors kyrka, Forsa kyrka]"
         400:
           description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
           content:
