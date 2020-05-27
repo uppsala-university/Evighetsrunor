@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.8
+  version: 0.9.9
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -39,7 +39,7 @@ paths:
         - Enkel sökning
       summary: Hämtar lista med signum och dess kopplade runinskrifters identiteter.
       description: |
-        Hämtar en lista med signum  och dess kopplade runinskrifts identitet (uuid). <br>
+        Hämtar en lista med signum  och dess kopplade runinskrifters identiteter (uuid). <br>
         Lämpligt att användas för typeahead ändamål vid sökning/hämtning av signum. <br>
         Notera att minst 2 tecken måste anges för att sökningen ska utföras. <br>
         Sökträffar sorteras i fallande bokstavsordning enligt naturligt språk för en runforskare. Se responseobjekt för exempel.
@@ -70,12 +70,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/Signum'
                 example:
-                  - Öl 1: ccf0a7f9-1f4c-...
-                  - Öl 2: ccf0a7f9-1f4c-...
-                  - Öl 2b: ccf0a7f9-1f4c-...
-                  - Öl 10: ccf0a7f9-1f4c-...
-                  - Öl ANF1937;184: ccf0a7f9-...
-                  - Öl ANF1937;185: ccf0a7f9-...
+                  - "Öl 1 ..."
+                  - "Öl 2 ..."
+                  - "Öl 2b ..."
+                  - "Öl 10 ..."
+                  - "Öl ANF1937;184 ..."
+                  - "Öl ANF1937;185 ..."
         400:
           description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
           content:
@@ -139,6 +139,48 @@ paths:
                 $ref: '#/components/schemas/Error'
         404:
           description: (Not found). Inga poster hittades.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: (Internal server error). Ett oväntat fel inträffade.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /runetextypes:
+    get:
+      tags:
+        - Avancerad sökning
+      summary: Hämtar alla möjliga runtexttyper som en sökning kan göras utifrån.
+      description: Runtexttyper att använda när en sökfråga sätts samman
+      parameters:
+        - name: edition_id
+          in: query
+          description: Id för önskad utgåva
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: (OK)
+          content:
+            application/json:
+              schema:
+                type: array
+                example:
+                  - id: FVN
+                    name: Fornvästnordiska
+                    proper_name_searchable: true
+                  - id: ENG
+                    name: Engelska
+                    proper_name_searchable: false
+                items:
+                  $ref: '#/components/schemas/RuneTextType'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
           content:
             application/json:
               schema:
@@ -344,51 +386,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /translationtypes:
-    get:
-      tags:
-        - Avancerad sökning
-      summary: Hämtar alla möjliga översättningstyper som en sökning kan göras utifrån.
-      description: Översättningstyper att använda när en sökfråga sätts samman
-      parameters:
-        - name: edition_id
-          in: query
-          description: Id för önskad utgåva
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: (OK)
-          content:
-            application/json:
-              schema:
-                type: array
-                example:
-                  - id: da0b20c8-e036-456b-8f0a-6aeb06105f9a
-                    name: Fornvästnordiska
-                    proper_name_searchable: true
-                    is_complete: true
-                    method: NORMALISERING
-                  - id: ca79d466-888f-4011-b5bd-35fc6dd1d623
-                    name: Engelska
-                    proper_name_searchable: false
-                    is_complete: false
-                    method: OVERSATTNING
-                items:
-                  $ref: '#/components/schemas/RunicTextTranslationType'
-        400:
-          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        500:
-          description: (Internal server error). Ett oväntat fel inträffade.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /search:
     get:
       tags:
@@ -1024,7 +1021,6 @@ components:
           nullable: true
           example: "200 m sydöst om nuvarande position."
 
-    # TODO - Överväg byt namn - lär finnas på wikin. Marcus återkommer.
     RunicInscription:
       description: Grundinformation för en runinskription.
       type: object
@@ -1216,40 +1212,45 @@ components:
           items:
             $ref: '#/components/schemas/Translation'
 
-    RunicTextTranslationType:
+    RuneTextType:
+      type: object
+      description: Anger översättningstyp, transliterering/normalisering/översättning av en runtexter.
       required:
         - id
-        - is_complete
-        - method
         - name
         - proper_name_searchable
-      type: object
-      description: Översättningstyp, transliterering/normalisering/översättning av en runtext.
       properties:
         id:
-          description: Anger identiteten (uuid) för översättningstypen.
+          description: |
+            Anger unik stabil identitet för översättningstypen.
+            - RUN (Runtext). Transliterering (tecken-för-tecken) av runtexten. Samtliga inskrifter som har text har en translitterering. (Komplett=true).
+            - FVN (Fornvästnordiska). Normalisering av runtexten på fornvästnordiska. Samtliga inskrifter har INTE normalisering på Fornvästnordiska. (Komplett = false).
+            - NFS (Nationellt fornspråk). Normalisering av runtexten på annat språk än fornvästnordiska. Samtliga inskrifter har INTE normalisering på Nationellt fornspråk. (Komplett = false).
+            - ENG (Engelska). Översättning av runtexten till engelska. Samtliga inskrifter har INTE översättning till engelska. (Komplett = false).
           type: string
-          example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+          enum:
+            - RUN
+            - NFS
+            - FVN
+            - ENG
+          example: RUN
         name:
           description: Namn på översättningstypen
           type: string
           example: Fornvästnordiska
         proper_name_searchable:
-          description: Anger om texter av denna översättningstyp har sökbara egennamn
+          description: Anger om texter av denna översättningstyp har sökbara egennamn på personer som t ex "Hagbard Handfaste" eller "Halvard".
           type: boolean
           example: true
-        is_complete:
-          description: Anger om texter av denna översättningstyp är kompletta
-          type: boolean
-          example: true
-        method:
-          description: Anger översättningsmetod
-          type: string
-          example: NORMALISERING
-          enum:
-            - NORMALISERING
-            - TRANSLITERERING
-            - OVERSATTNING
+# TODO Peter. Just nu överflödig för Evighetsrunor. Är den här viktig för dig ur söksynpunkt får du gärna ha kvar den, annars tar vi bort den.
+#        method:
+#          description: Anger översättningsmetod.
+#          type: string
+#          example: NORMALISERING
+#          enum:
+#            - NORMALISERING
+#            - TRANSLITERERING
+#            - OVERSATTNING
 
     RunicInscriptionGeoPosition:
       description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
@@ -1296,20 +1297,6 @@ components:
         oldest_known:
           # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
-
-    PlaceResponse:
-      description: Objektrepresentation av en plats (place) och runinskriftsidentiteter avsett för "typeahead" ändamål.
-      type: object
-      properties:
-        place:
-          description: Innehåller namn på plats.
-          type: string
-          example: "Resmo kyrka"
-        place_id:
-          description: Anger identiteten (uuid) för platsen.
-          type: string
-          format: uuid
-          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
 
     RunicType:
       description: Anger vilka typer av runor som använts i inskriften.
@@ -1433,11 +1420,22 @@ components:
           description: Innehåller ett sammansatt signum bestående av signum 1 och signum 2.
           type: string
           example: "Öl 10"
-        inscription_id:
-          description: Anger identiteten (uuid) till runinskriften.
-          type: string
-          format: uuid
-          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+#        inscription_id:
+#          description: Anger identiteten (uuid) till runinskriften.
+#          type: string
+#          format: uuid
+#          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+        inscriptions:
+          description: |
+            Anger en array av identiteter (inscription_id i form av uuid) till runinskrifter med samma signum.
+            I normalfallet har ett signum en identitet som förväntat.
+            Men, i undantagsfall har man återanvänt samma signum till fler än en inskrift.
+            Exempel: Signumet 'B 923' har två identiteter till olika runiskrifter.
+          type: array
+          items:
+            type: string
+            format: uuid
+            example: "[dcf0a7f9-1f4c-421f-a321-0e36daea43ca, 54d36a4f-82ae-4690-9dc9-bfa8f5301cea]"
 
     TextQueryGroup:
       required:
@@ -1483,10 +1481,10 @@ components:
             - INCLUDE
             - EXCLUDE
             - ONLY
-        translation_type_id:
+        runetexttype_id:
           type: string
-          description: Anger i vilken översättning sökningen skall ske
-          example: da0b20c8-e036-456b-8f0a-6aeb06105f9a
+          description: Anger identiteten till i vilken text (översättning, translittering eller normalisering) sökningen skall ske.
+          example: FVN
       description: Sökfråga som används för att sätta villkor för textsökning i SRD
 
     Year:
