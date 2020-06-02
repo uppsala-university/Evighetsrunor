@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.9
+  version: 0.9.10
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -150,7 +150,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /runetextypes:
+  /runetexttypes:
     get:
       tags:
         - Avancerad sökning
@@ -172,8 +172,6 @@ paths:
                 type: array
                 example:
                   - id: FVN
-                    name: Fornvästnordiska
-                    proper_name_searchable: true
                   - id: ENG
                     name: Engelska
                     proper_name_searchable: false
@@ -386,6 +384,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  # TODO - hur ska man ange egennamnssökning i api:et?
+  #  proper_name_searchable:
+  #    description: Anger om texter av denna översättningstyp har sökbara egennamn på personer som t ex "Hagbard Handfaste" eller "Halvard".
+  #    type: boolean
+  #    example: true
+
   /search:
     get:
       tags:
@@ -495,8 +499,10 @@ paths:
         - name: bbox
           in: query
           description: |
-            Anger koordinater i kommaseparerad lista för spatial utsökning i bboxformat; left,top,bottom,right.
-            Exempel 688232.203,6332689.351,713304.203,6345041.351 Koordinatsystem för geometrier förväntas vara WGS84 (EPSG:4326).
+            Anger koordinater i kommaseparerad lista för spatial utsökning i bboxformat.
+            Koordinatsystem för angivna geometrier (latitud, longitud) förväntas vara WGS84 (EPSG:4326) angivet i decimalgrader.
+            Koordinaterna förväntas anges enligt ordning: bbox = min Longitude , min Latitude , max Longitude , max Latitude.
+            Exempel: 16,56,17,57.5
           required: true
           schema:
             type: string
@@ -1214,51 +1220,57 @@ components:
 
     RuneTextType:
       type: object
-      description: Anger översättningstyp, transliterering/normalisering/översättning av en runtexter.
+      description: Anger de olika typer av translitereringar, normaliseringar och översättningar som kan anges vid sökning på runtexter.
       required:
-        - id
-        - name
-        - proper_name_searchable
+        - transliteration
+        - normalisation
+        - translation
       properties:
-        id:
+        transliteration:
           description: |
-            Anger unik stabil identitet för översättningstypen.
-            - RUN (Runtext). Transliterering (tecken-för-tecken) av runtexten. Samtliga inskrifter som har text har en translitterering. (Komplett=true).
-            - FVN (Fornvästnordiska). Normalisering av runtexten på fornvästnordiska. Samtliga inskrifter har INTE normalisering på Fornvästnordiska. (Komplett = false).
-            - NFS (Nationellt fornspråk). Normalisering av runtexten på annat språk än fornvästnordiska. Samtliga inskrifter har INTE normalisering på Nationellt fornspråk. (Komplett = false).
-            - ENG (Engelska). Översättning av runtexten till engelska. Samtliga inskrifter har INTE översättning till engelska. (Komplett = false).
-          type: string
-          enum:
-            - RUN
-            - NFS
-            - FVN
-            - ENG
-          example: RUN
-        name:
-          description: Namn på översättningstypen
-          type: string
-          example: Fornvästnordiska
-        proper_name_searchable:
-          description: Anger om texter av denna översättningstyp har sökbara egennamn på personer som t ex "Hagbard Handfaste" eller "Halvard".
-          type: boolean
-          example: true
-# TODO Peter. Just nu överflödig för Evighetsrunor. Är den här viktig för dig ur söksynpunkt får du gärna ha kvar den, annars tar vi bort den.
-#        method:
-#          description: Anger översättningsmetod.
-#          type: string
-#          example: NORMALISERING
-#          enum:
-#            - NORMALISERING
-#            - TRANSLITERERING
-#            - OVERSATTNING
+            Anger lista av unika stabila identiteter av translitereringar av runtexter.
+            En transliterering är en översättning (tecken-för-tecken) av runtexten. Samtliga inskrifter som har text har en translitterering.
+          type: array
+          items:
+            type: string
+            enum:
+              - RUN
+          example: "[RUN]"
+        normalisation:
+          description: |
+            Anger lista av unika stabila identiteter av normaliseringar av runtexter.
+            En normalisering är en översättning av runtexten till något av de förekommande språk som definieras nedan.
+            * FVN (Fornvästnordiska). Normalisering (översättning) av runtexten till fornvästnordiska.
+            Notera att vissa runinskrifter saknar normalisering på fornvästnordiska.
+            * NFS (Nationellt fornspråk). Normalisering (översättning) av runtexten till annat språk än fornvästnordiska.
+            Notera att vissa runinskrifter saknar normalisering till nationellt fornspråk.
+          type: array
+          items:
+            type: string
+            enum:
+              - FVN
+              - NFS
+          example: "[FVN, NFS]"
+        translation:
+          description: |
+            Anger lista av unika stabila identiteter av översättningar av runtexter.
+            Följande språköversättningar förekommer.
+            * EN (Engelska). Normalisering (översättning) av runtexten till engelska. Notera att vissa runinskrifter saknar översättning på engelska.
+            * NO (Norska). Normalisering (översättning) av runtexten till norska. Notera att vissa runinskrifter saknar översättning på norska.
+            * SV (Svenska). Normalisering (översättning) av runtexten till svenska. Notera att vissa runinskrifter saknar översättning på svenska.
+          type: array
+          items:
+            type: string
+            enum:
+              - EN
+              - NO
+              - SV
+          example: "[EN, NO, SV]"
 
     RunicInscriptionGeoPosition:
       description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
       type: object
       properties:
-#        current:
-#          # Anger inskriftsbärarens senaste kända (oftast nuvarande) position.
-#          $ref: '#/components/schemas/Geometry'
         current:
           description: Anger inskriftsbärarens senaste kända (oftast nuvarande) position. Notera att objektet kan vara null om positionen saknas!
           nullable: true
@@ -1420,11 +1432,11 @@ components:
           description: Innehåller ett sammansatt signum bestående av signum 1 och signum 2.
           type: string
           example: "Öl 10"
-#        inscription_id:
-#          description: Anger identiteten (uuid) till runinskriften.
-#          type: string
-#          format: uuid
-#          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+        #        inscription_id:
+        #          description: Anger identiteten (uuid) till runinskriften.
+        #          type: string
+        #          format: uuid
+        #          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         inscriptions:
           description: |
             Anger en array av identiteter (inscription_id i form av uuid) till runinskrifter med samma signum.
