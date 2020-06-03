@@ -8,11 +8,10 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.10
+  version: 0.9.11
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
-#  - description: SwaggerHub API Auto Mocking
 
 ### Generella implementationsregler i API:et ###
 # Regel 1: Arrayer har alltid ett värde.
@@ -170,11 +169,6 @@ paths:
             application/json:
               schema:
                 type: array
-                example:
-                  - id: FVN
-                  - id: ENG
-                    name: Engelska
-                    proper_name_searchable: false
                 items:
                   $ref: '#/components/schemas/RuneTextType'
         400:
@@ -309,9 +303,8 @@ paths:
     get:
       tags:
         - Avancerad sökning
-      summary: Hämtar lista med urval där både grupp och subgrupp kan anges.
-      description: Hämtar lista med urval för en urvalsgrupp att användas när man
-        sätter filtervillkor för en avancerad sökning TODO
+      summary: Hämtar lista med urval där både grupp och subgrupp kan anges för att sätta filtervillkor för en avancerad sökning.
+      description: Hämtar lista med urval där både grupp och subgrupp kan anges för att sätta filtervillkor för en avancerad sökning.
       parameters:
         - name: edition_id
           in: query
@@ -350,12 +343,16 @@ paths:
                 example:
                   - id: ca79d466-888f-4011-b5bd-35fc6dd1d622
                     name: Sverige
+                    has_children: false
                   - id: 25a4de16-c421-41ed-8d17-fc465fd03db1
                     name: Bok
+                    has_children: false
                   - id: b70ec612-cef6-446d-afc0-4e3387804858
                     name: 'Urnordisk/vikingatid'
+                    has_children: false
                   - id: c95ec612-cef6-446d-afc0-4e3387804752
                     name: 'RAK'
+                    has_children: false
                   - id: b70ec612-cef6-446d-afc0-4e3387804842
                     name: '...'
                 items:
@@ -1390,7 +1387,7 @@ components:
       required:
         - id
         - name
-        - hasChildren
+        - has_children
       type: object
       properties:
         id:
@@ -1401,7 +1398,7 @@ components:
           type: string
           description: Anger namnet på urvalet (lämpligt för presentation).
           example: Bro (Gotland)
-        hasChildren:
+        has_children:
           description: Anger om urvalsgruppen har ytterligare djup eller ej. True innebär att det finns ytterligare underliggande nivåer.
             Dessa attribut kan då undersökas vidare.
           type: boolean
@@ -1432,11 +1429,6 @@ components:
           description: Innehåller ett sammansatt signum bestående av signum 1 och signum 2.
           type: string
           example: "Öl 10"
-        #        inscription_id:
-        #          description: Anger identiteten (uuid) till runinskriften.
-        #          type: string
-        #          format: uuid
-        #          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         inscriptions:
           description: |
             Anger en array av identiteter (inscription_id i form av uuid) till runinskrifter med samma signum.
@@ -1488,14 +1480,25 @@ components:
           example: þaiR
         proper_name_search:
           type: string
-          description: Anger hur/om sökning skall ske i egennamn
+          description: |
+            Anger hur/om sökning skall ske i egennamn.
+            Notera att namnfrågor enbart är relevanta hos normaliseringar.
           enum:
             - INCLUDE
             - EXCLUDE
             - ONLY
         runetexttype_id:
+          description: |
+            Anger identiteten för en specifik runtexttyp (översättning, translittering eller normalisering) sökningen skall ske i.
+            Möjliga värden som kan anges är summan av alla runtexttyper, dvs förekommande översättningar, translittereringar eller normaliseringar.
           type: string
-          description: Anger identiteten till i vilken text (översättning, translittering eller normalisering) sökningen skall ske.
+          enum:
+            - RUN
+            - FVN
+            - NFS
+            - EN
+            - NO
+            - SV
           example: FVN
       description: Sökfråga som används för att sätta villkor för textsökning i SRD
 
@@ -1560,3 +1563,4 @@ components:
           type: string
           nullable: true
           example: Engelska
+
