@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.11
+  version: 0.9.12
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -1173,6 +1173,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RunicText'
+        position:
+          # Anger geografisk information om inskriftsbärarens position.
+          $ref: '#/components/schemas/RunicInscriptionGeoPosition'
 
     RunicMaterial:
       type: object
