@@ -168,9 +168,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RuneTextType'
+                $ref: '#/components/schemas/RuneTextType'
         400:
           description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
           content:
