@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.12
+  version: 0.9.13
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -385,7 +385,7 @@ paths:
   #    type: boolean
   #    example: true
 
-  /search:
+  /search/{edition_id}:
     get:
       tags:
         - Enkel sökning
@@ -399,7 +399,7 @@ paths:
         Exempel 3: .... Ög 247, Ög 248, Ög ANF1937;184, Ög ANF1937;185 .... <br>
       parameters:
         - name: edition_id
-          in: query
+          in: path
           description: Id för önskad utgåva
           required: true
           schema:
@@ -442,6 +442,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
     post:
       tags:
         - Avancerad sökning
