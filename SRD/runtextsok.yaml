@@ -457,7 +457,7 @@ paths:
             type: string
       requestBody:
         content:
-          '*/*':
+          application/json:
             schema:
               $ref: '#/components/schemas/SearchQuery'
         required: true
@@ -465,7 +465,7 @@ paths:
         200:
           description: Hittade runtexter med markering av hittade ord
           content:
-            '*/*':
+            application/json:
               schema:
                 type: array
                 items:
@@ -473,7 +473,7 @@ paths:
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
-            '*/*':
+            application/json:
               schema:
                 $ref: '#/components/schemas/Error'
       x-codegen-request-body-name: query
