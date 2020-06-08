@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.13
+  version: 0.9.14
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -379,13 +379,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  # TODO - hur ska man ange egennamnssökning i api:et?
-  #  proper_name_searchable:
-  #    description: Anger om texter av denna översättningstyp har sökbara egennamn på personer som t ex "Hagbard Handfaste" eller "Halvard".
-  #    type: boolean
-  #    example: true
-
-  /search/{edition_id}:
+  /search:
     get:
       tags:
         - Enkel sökning
@@ -399,7 +393,7 @@ paths:
         Exempel 3: .... Ög 247, Ög 248, Ög ANF1937;184, Ög ANF1937;185 .... <br>
       parameters:
         - name: edition_id
-          in: path
+          in: query
           description: Id för önskad utgåva
           required: true
           schema:
@@ -449,13 +443,6 @@ paths:
       summary: Avancerad sökning i runtexter enligt sökvillkor
       description: Sök i runtexter enligt kombinerade sökvillkor för text samt filtrering
         enligt urval
-      parameters:
-        - name: edition_id
-          in: path
-          description: Id för önskad utgåva
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -511,71 +498,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/MapIndex'
-        400:
-          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        500:
-          description: (Internal server error). Ett oväntat fel inträffade.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /inscriptions:
-    get:
-      tags:
-        - Runtexter
-        - Not implemented
-      summary: Hämtar en lista med runinskrifter.
-      description: Hämtar en lista med runinskrifter för en viss utgåva
-      parameters:
-        - name: edition_id
-          in: query
-          description: Id för önskad utgåva
-          required: true
-          schema:
-            type: string
-            example: 2020
-        - name: inscription_id
-          in: query
-          description: |
-            Anger ev. identitet/er (uuid) för runinskrifter som ska hämtas.
-          schema:
-            type: array
-            items:
-              type: string
-              format: uuid
-              example:
-                - ccf0a7f9-1f4c-421f-a321-0e36daea43eb, cfc0a7f9-1f4c-421f-a321-0e36daea56be
-        - name: page
-          in: query
-          description: Index för önskad resultatsida
-          schema:
-            type: number
-            format: number
-        - name: size
-          in: query
-          description: Storlek på sidor
-          schema:
-            type: number
-            format: number
-        - name: sort
-          in: query
-          description: Attribut som man vill använda föra att sortera svaret, tex "sort=id",
-            eller "sort=id,desc" om man vill ha svaret i fallande ordning.
-          schema:
-            type: string
-            format: sort
-      responses:
-        200:
-          description: (OK). Posten hittades.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PagedRunicInscriptionResponse'
         400:
           description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
           content:
@@ -1383,6 +1305,10 @@ components:
           description: Filtrering
           items:
             $ref: '#/components/schemas/Selection'
+        edition_id:
+          type: string
+          description: Anger id för önskad utgåva av SNRD som sökningen ska utföras på.
+          example: "2020"
 
     SelectionItem:
       description: Anger ett urval (t ex socken Bro).
