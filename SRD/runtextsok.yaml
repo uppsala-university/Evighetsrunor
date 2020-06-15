@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.14
+  version: 0.9.16
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -560,6 +560,7 @@ paths:
     get:
       tags:
         - Utgåva
+        - Not implemented
       summary: Hämtar en lista med utgåvor
       description: Hämtar en lista med utgåvor
       responses:
@@ -922,11 +923,55 @@ components:
           type: string
           nullable: true
           example: Rättvik
-        country:
-          description: Anger ev. namn på land där inskriftsbäraren hittades.
+        country_code:
+          description: |
+            Anger landskod för ev. förekommande land där inskriftsbäraren hittades.
+            - DK sv: 'Danmark', en: 'Denmark'
+            - DE sv: 'Tyskland', en: 'Germany'
+            - FI sv: 'Finland', en: 'Finland'
+            - FO sv: 'Färöarna', en: 'Faroe Islands'
+            - FR sv: 'Frankrike', en: 'France'
+            - GL sv: 'Grönland', en: 'Greenland'
+            - GR sv: 'Grekland', en: 'Greece'
+            - GB_en sv: 'Storbritannien', en: 'United Kingdom'
+            - GB_sc sv: 'Skottland', en: 'Scotland'
+            - IE sv: 'Irland', en: 'Ireland'
+            - IT sv: 'Italien', en: 'Italy'
+            - IS sv: 'Island', en: 'Iceland'
+            - IM sv: 'Isle of Man', en: 'Isle of Man'
+            - LV sv: 'Lettland', en: 'Latvia'
+            - NO sv: 'Norge', en: 'Norway'
+            - NL sv: 'Nederländerna', en: 'Netherlands'
+            - RU sv: 'Ryssland', en: 'Russia'
+            - SE sv: 'Sverige', en: 'Sweden'
+            - TR sv: 'Turkiet', en: 'Turkey'
+            - UA sv: 'Ukraina', en: 'Ukraine'
+            - PL sv: 'Polen', en: 'Poland'
           type: string
+          enum:
+            - DK
+            - DE
+            - FI
+            - FO
+            - FR
+            - GL
+            - GR
+            - GB_en
+            - GB_sc
+            - IE
+            - IT
+            - IS
+            - IM
+            - LV
+            - NO
+            - NL
+            - RU
+            - SE
+            - TR
+            - UA
+            - PL
           nullable: true
-          example: Sverige
+          example: SE
 
     OriginalLocation:
       description: Grundinformation om en inskriftsbärares ursprungliga placering.
