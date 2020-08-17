@@ -11,15 +11,15 @@
 
 <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle>
     a skos:ConceptScheme , rdfs:Resource ;
-	rdfs:label "Rune stone profile styles, after Gräslund"@en , "Runstenprofilstilar, efter Gräslund"@sv ;
-	dcterms:title "Rune stone profile styles, after Gräslund"@en , "Runstenprofilstilar, efter Gräslund"@sv ;
-	skos:hasTopConcept style:RAK , style:Fp , style:Pr1 , style:Pr2 , style:Pr3 , style:Pr4 , style:Pr5 , style:KB .
+    rdfs:label "Rune stone profile styles, after Gräslund; 'Sod' after Ljung"@en , "Runstenprofilstilar, efter Gräslund; 'Sod' efter Ljung"@sv ;
+    dcterms:title "Rune stone profile styles, after Gräslund; 'Sod' after Ljung"@en , "Runstenprofilstilar, efter Gräslund; 'Sod' efter Ljung"@sv ;
+    skos:hasTopConcept style:Rak , style:Fp , style:Pr1 , style:Pr2 , style:Pr3 , style:Pr4 , style:Pr5 , style:Kb , style:Sod .
 
-style:RAK
+style:Rak
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Plain"@en , "Rak"@sv ;
-	skos:prefLabel "Plain"@en , "Rak"@sv ;
+    skos:prefLabel "Plain"@en , "Rak"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "980 CE"@en , "980 v.t."@sv ;
                                             skos:altLabel "980 AD"@en , "980 e.Kr."@sv ;
@@ -34,7 +34,7 @@ style:Fp
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Bird’s-eye view"@en , "Fågelperspektiv"@sv ;
-	skos:prefLabel "Bird’s-eye view"@en , "Fågelperspektiv"@sv ;
+    skos:prefLabel "Bird’s-eye view"@en , "Fågelperspektiv"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1010 CE"@en , "1010 v.t."@sv ;
                                             skos:altLabel "1010 AD"@en , "1010 e.Kr."@sv ;
@@ -49,7 +49,7 @@ style:Pr1
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 1"@en , "Profilstil 1"@sv ;
-	skos:prefLabel "Profile style 1"@en , "Profilstil 1"@sv ;
+    skos:prefLabel "Profile style 1"@en , "Profilstil 1"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1010 CE"@en , "1010 v.t."@sv ;
                                             skos:altLabel "1010 AD"@en , "1010 e.Kr."@sv ;
@@ -64,7 +64,7 @@ style:Pr2
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 2"@en , "Profilstil 2"@sv ;
-	skos:prefLabel "Profile style 2"@en , "Profilstil 2"@sv ;
+    skos:prefLabel "Profile style 2"@en , "Profilstil 2"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1020 CE"@en , "1020 v.t."@sv ;
                                             skos:altLabel "1020 AD"@en , "1020 e.Kr."@sv ;
@@ -79,7 +79,7 @@ style:Pr3
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 3"@en , "Profilstil 3"@sv ;
-	skos:prefLabel "Profile style 3"@en , "Profilstil 3"@sv ;
+    skos:prefLabel "Profile style 3"@en , "Profilstil 3"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1050 CE"@en , "1050 v.t."@sv ;
                                             skos:altLabel "1050 AD"@en , "1050 e.Kr."@sv ;
@@ -95,8 +95,8 @@ style:Pr4
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     owl:sameAs aat:300020939 ;
     rdfs:label "Profile style 4"@en , "Urnes style"@en , "Profilstil 4"@sv , "Urnesstil"@sv ;
-	skos:prefLabel "Profile style 4"@en , "Profilstil 4"@sv ;
-	skos:altLabel "Urnes style"@en , "Urnesstil"@sv ;
+    skos:prefLabel "Profile style 4"@en , "Profilstil 4"@sv ;
+    skos:altLabel "Urnes style"@en , "Urnesstil"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1070 CE"@en , "1070 v.t."@sv ;
                                             skos:altLabel "1070 AD"@en , "1070 e.Kr."@sv ;
@@ -106,12 +106,12 @@ style:Pr4
                                              skos:altLabel "1100 AD"@en , "1100 e.Kr."@sv ;
                                              time:hasDateTimeDescription [ time:year "1100"^^xsd:gYear ]
                                            ]
-			     ] .
+                 ] .
 style:Pr5
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 5"@en , "Profilstil 5"@sv ;
-	skos:prefLabel "Profile style 5"@en , "Profilstil 5"@sv ;
+    skos:prefLabel "Profile style 5"@en , "Profilstil 5"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1100 CE"@en , "1100 v.t."@sv ;
                                             skos:altLabel "1100 AD"@en , "1100 e.Kr."@sv ;
@@ -122,8 +122,13 @@ style:Pr5
                                              time:hasDateTimeDescription [ time:year "1130"^^xsd:gYear ]
                                            ]
                  ] .
-style:KB
+style:Kb
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Cross-band style"@en , "Korsbandstil"@sv ;
-	skos:prefLabel "Cross-band style"@en , "Korsbandstil"@sv .
+    skos:prefLabel "Cross-band style"@en , "Korsbandstil"@sv .
+style:Sod
+    a skos:Concept ;
+    skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
+    rdfs:label "Band with ornamental details"@en , "Skriftband med ornamentala detaljer"@sv ;
+    skos:prefLabel "Band with ornamental details"@en , "Skriftband med ornamentala detaljer"@sv .
