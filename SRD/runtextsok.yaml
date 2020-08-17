@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.16
+  version: 0.9.17
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -595,7 +595,7 @@ paths:
         - Utgåva
         - Not implemented
       summary: Hämtar all data i en utgåva
-      description: 'Hämtar en fil som innehåller all data i en utgåva av SRD. TODO bestämma vilket format som returneras.'
+      description: 'Hämtar en fil som innehåller all data i en utgåva. TODO bestämma vilket format som returneras.'
       parameters:
         - name: edition_id
           in: path
@@ -707,7 +707,7 @@ components:
           type: string
           description: Anger URL för att ladda ner all data i en utgåva
           example: /editions/2018/download
-      description: En utgåva (version) av SRD
+      description: En utgåva (version)
 
     Error:
       required:
@@ -1097,7 +1097,7 @@ components:
           type: boolean
           example: true
         image_links:
-          description: Innehåller array av URL:er till bilder av objektet. Url:erna finns lagrade i SRD databas och skördas ej till K-samsök.
+          description: Innehåller array av URL:er till bilder av objektet. Url:erna finns lagrade i SRDs databas och skördas ej till K-samsök.
           type: array
           items:
             type: string
@@ -1105,7 +1105,7 @@ components:
             - >-
               http://kmb.raa.se/cocoon/bild/raa-image/16000300012834/normal/1.jpg
         references:
-          description: Innehåller array av referenser till objektet. Referenserna finns lagrade i SRD databas och skördas ej till K-samsök.
+          description: Innehåller array av referenser till objektet. Referenserna finns lagrade i SRDs databas och skördas ej till K-samsök.
           type: array
           items:
             type: string
@@ -1122,7 +1122,7 @@ components:
         inscription_id:
           type: string
           format: uuid
-          description: Anger identiteten (uuid) till runinskriften i SNRD.
+          description: Anger identiteten (uuid) till runinskriften.
           example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         signum1:
           description: Anger den första identitetsdelen för runinskriften, s.k signum.
@@ -1305,55 +1305,14 @@ components:
           example: sv-se
 
     SearchResult:
+      description: Resultat av en sökfråga
       required:
         - inscription
       type: object
       properties:
+        # TODO: Ändra namn till inscriptions?
         inscription:
-          type: array
-          description: Runinskrifter
-          items:
-            $ref: '#/components/schemas/RunicInscription'
-        found_words_index:
-          type: array
-          example:
-            - 0
-            - 4
-            - 6
-          items:
-            type: integer
-      description: Resultat av en sökfråga
-
-    SearchQuery:
-      description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning i SRD
-      required:
-        - query
-      type: object
-      properties:
-        query:
-          type: array
-          description: Textsökfråga
-          items:
-            $ref: '#/components/schemas/TextQueryGroup'
-        timeinterval:
-          description: Anger sökvillkor baserade på datering inom ett intervall.
-          type: array
-          items:
-            $ref: '#/components/schemas/TimeInterval'
-        year:
-          description: Anger sökvillkor baserat på årtal.
-          type: array
-          items:
-            $ref: '#/components/schemas/Year'
-        filter:
-          type: array
-          description: Filtrering
-          items:
-            $ref: '#/components/schemas/Selection'
-        edition_id:
-          type: string
-          description: Anger id för önskad utgåva av SNRD som sökningen ska utföras på.
-          example: "2020"
+          $ref: '#/components/schemas/RunicInscription'
 
     SelectionItem:
       description: Anger ett urval (t ex socken Bro).
@@ -1377,23 +1336,6 @@ components:
           type: boolean
           example: true
 
-    Selection:
-      description: Kompletterande filter med urvalsgrupper
-      required:
-        - item
-        - op
-      type: object
-      properties:
-        op:
-          type: string
-          description: Logisk operator att användas när filter kombineras
-          enum:
-            - AND
-            - OR
-            - NOT
-        item:
-          $ref: '#/components/schemas/SelectionItem'
-
     Signum:
       description: Objektrepresentation av signum och runinskriftsidentiteter avsett för "typeahead" ändamål.
       type: object
@@ -1414,114 +1356,6 @@ components:
             format: uuid
             example: "[dcf0a7f9-1f4c-421f-a321-0e36daea43ca, 54d36a4f-82ae-4690-9dc9-bfa8f5301cea]"
 
-    TextQueryGroup:
-      required:
-        - condition
-      type: object
-      properties:
-        op:
-          type: string
-          description: Anger logisk operator för användas när flera sökfrågor kombineras.
-            Första frågan i en TextQueryGroup behöver inte ha en logisk operator
-          enum:
-            - AND
-            - OR
-            - NOT
-        condition:
-          type: array
-          items:
-            $ref: '#/components/schemas/TextQuery'
-      description: Gruppering (tänk parenteser) av sökvillkor i en avancerad sökfråga
-
-    TextQuery:
-      required:
-        - matching_text
-        - proper_name_search
-      type: object
-      properties:
-        op:
-          type: string
-          description: Anger logisk operator för användas när flera sökfrågor kombineras.
-            Första frågan i en TextQuery behöver inte ha en logisk operator
-          enum:
-            - AND
-            - OR
-            - NOT
-        matching_text:
-          type: string
-          description: Söktext
-          example: þaiR
-        proper_name_search:
-          type: string
-          description: |
-            Anger hur/om sökning skall ske i egennamn.
-            Notera att namnfrågor enbart är relevanta hos normaliseringar.
-          enum:
-            - INCLUDE
-            - EXCLUDE
-            - ONLY
-        runetexttype_id:
-          description: |
-            Anger identiteten för en specifik runtexttyp (översättning, translittering eller normalisering) sökningen skall ske i.
-            Möjliga värden som kan anges är summan av alla runtexttyper, dvs förekommande översättningar, translittereringar eller normaliseringar.
-          type: string
-          enum:
-            - RUN
-            - FVN
-            - NFS
-            - EN
-            - NO
-            - SV
-          example: FVN
-      description: Sökfråga som används för att sätta villkor för textsökning i SRD
-
-    Year:
-      description: Anger årtal för att kunna uttrycka frågor av typen "sök runinskrifter daterade till år 1066".
-      required:
-        - year
-      type: object
-      properties:
-        op:
-          type: string
-          description: Anger logisk operator för användas när flera sökfrågor kombineras.
-            Första frågan i en TextQuery behöver inte ha en logisk operator
-          enum:
-            - OR
-            - NOT
-        year:
-          type: integer
-          description: Anger årtalet.
-          minLength: 1
-          maxLength: 4
-          example: 1066
-
-    TimeInterval:
-      description: Anger årtalsbaserat intervall för att kunna uttrycka frågor av typen "sök runinskrifter daterade inom intervallet år 800-900".
-      required:
-        - from_year
-        - to_year
-      type: object
-      properties:
-        op:
-          type: string
-          description: Anger logisk operator för användas när flera sökfrågor kombineras.
-            Första frågan i en TextQuery behöver inte ha en logisk operator
-          enum:
-            - OR
-            - NOT
-        from_year:
-          type: integer
-          description: Anger start årtal för intervallet. Angivet årtal inkluderas i sökningen.
-          minLength: 1
-          maxLength: 4
-          example: 800
-        to_year:
-          type: integer
-          description: Anger slut årtal för intervallet. Angivet årtal inkluderas i sökningen.
-          minLength: 1
-          maxLength: 4
-          example: 900
-
     Translation:
       type: object
       description: Objektrepresentation av en översättning.
@@ -1537,3 +1371,171 @@ components:
           nullable: true
           example: Engelska
 
+    SearchQuery:
+      description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning
+      required:
+        - query
+      type: object
+      properties:
+        expression:
+          description: Uttryck bestående av olika villkor, kombinerade med AND, OR och NOT
+          $ref: '#/components/schemas/Expression'
+        edition_id:
+          type: string
+          description: Anger id för önskad utgåva som sökningen ska utföras på.
+          example: "2020"
+
+    Selection:
+      description: Kompletterande filter med urvalsgrupper
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - selection_group_id
+            - item_id
+          properties:
+            selection_group_id:
+              type: string
+              description: Anger identiteten för urvalsgruppen
+              example: LANDSKAP
+            item_id:
+              type: string
+              description: Anger identiteten (uuid) för det specifika valet ur urvalsgruppen
+              example: c387aad1-9b4b-4c8c-ad0d-0bb4eaf605d6
+
+    TextQuery:
+      description: Sökfråga som används för att sätta villkor för textsökning
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - matching_text
+            - proper_name_search
+          properties:
+            matching_text:
+              type: string
+              description: Söktext
+              example: þaiR
+            proper_name_search:
+              type: string
+              description: |
+                Anger hur/om sökning skall ske i egennamn.
+                Notera att namnfrågor enbart är relevanta hos normaliseringar.
+              enum:
+                - INCLUDE
+                - EXCLUDE
+                - ONLY
+            runetexttype_id:
+              description: |
+                Anger identiteten för en specifik runtexttyp (översättning, translittering eller normalisering) sökningen skall ske i.
+                Möjliga värden som kan anges är summan av alla runtexttyper, dvs förekommande översättningar, translittereringar eller normaliseringar.
+              type: string
+              enum:
+                - RUN
+                - FVN
+                - NFS
+                - EN
+                - NO
+                - SV
+              example: FVN
+
+    Year:
+      description: Anger årtal för att kunna uttrycka frågor av typen "sök runinskrifter daterade till år 1066".
+      # TODO: Är detta bara ett specialfall av TimeInterval?
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - year
+          discriminator:
+            propertyName: op
+          properties:
+            year:
+              type: integer
+              description: Anger årtalet.
+              minLength: 1
+              maxLength: 4
+              example: 1066
+
+    TimeInterval:
+      description: Anger årtalsbaserat intervall för att kunna uttrycka frågor av typen "sök runinskrifter daterade inom intervallet år 800-900".
+      # TODO: Menar vi att en inskrifts tpq och taq ska vara inom detta intervall, eller att detta intervall ska vara inom inskriftens tpq och taq?
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - from_year
+            - to_year
+          properties:
+            from_year:
+              type: integer
+              description: Anger start årtal för intervallet. Angivet årtal inkluderas i sökningen.
+              minLength: 1
+              maxLength: 4
+              example: 800
+            to_year:
+              type: integer
+              description: Anger slut årtal för intervallet. Angivet årtal inkluderas i sökningen.
+              minLength: 1
+              maxLength: 4
+              example: 900
+
+    Expression:
+      description: Uttryck bestående av ett logiskt uttryck, eller ett villkor.
+      oneOf:
+        - $ref: '#/components/schemas/And'
+        - $ref: '#/components/schemas/Or'
+        - $ref: '#/components/schemas/Not'
+        - $ref: '#/components/schemas/TextQuery'
+        - $ref: '#/components/schemas/Year'
+        - $ref: '#/components/schemas/Selection'
+        - $ref: '#/components/schemas/TimeInterval'
+      discriminator:
+        propertyName: op
+
+    Not:
+      description: Logiskt uttryck bestående av ett uttryck som inte ska gälla.
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - child
+          discriminator:
+            propertyName: op
+          properties:
+            expression:
+              $ref: '#/components/schemas/Expression'
+
+    And:
+      description: |
+        Logiskt uttryck som kombinerar andra uttryck och som är sant om alla av dess underuttryck är sanna.
+        Om det förekommer flera villkor av typen `TextQuery` som direkta barn till detta uttryck ska alla
+        TextQuery matcha samma ord i det olika texterna för att en inskrift ska inkluderas i svaret.
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - expressions
+          discriminator:
+            propertyName: op
+          properties:
+            expressions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Expression'
+
+    Or:
+      description: |
+        Logiskt uttryck som kombinerar andra uttryck och som är sant om minst ett av dess underuttryck är sant.
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - expressions
+          discriminator:
+            propertyName: op
+          properties:
+            expressions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Expression'
