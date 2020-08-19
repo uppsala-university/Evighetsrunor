@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.17
+  version: 0.9.18
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -401,7 +401,9 @@ paths:
             example: "2020"
         - name: matching_text
           in: query
-          description: Söksträng
+          description: |
+            Söksträng. Träffar fås endast på exakt sträng. D v s strängen "Fors" kommer endast ge
+            träff på inskrifter i "Fors", och ej på inskrifter i "Fors kyrka" eller "Forsa kyrka".
           required: true
           schema:
             type: string
@@ -1384,7 +1386,51 @@ components:
           type: string
           description: Anger id för önskad utgåva som sökningen ska utföras på.
           example: "2020"
-
+      example: |
+        {
+          "edition_id": "2020",
+          "expression": {
+            "op": "And",
+            "expressions": [
+              {
+                "op": "TimeInterval",
+                "from_year": 900,
+                "to_year": 999
+              },
+              {
+                "op": "TextQueryGroup",
+                "textQueries": [
+                  {
+                    "op": "TextQuery",
+                    "matching_text": "auk",
+                    "proper_name_search": "EXCLUDE",
+                    "runetexttype_id": "RUN"
+                  },
+                  {
+                    "op": "TextQuery",
+                    "matching_text": "ok",
+                    "proper_name_search": "EXCLUDE",
+                    "runetexttype_id": "FVN"
+                  }
+                ],
+                "notTranslationQueries": [
+                  {
+                    "op": "TranslationQuery",
+                    "matching_text": "_Ant_",
+                    "translationtype_id": "EN"
+                  }
+                ],
+                "translationQueries": [
+                  {
+                    "op": "TranslationQuery",
+                    "matching_text": "father",
+                    "translationtype_id": "EN"
+                  }
+                ]
+              }
+            ]
+          }
+        }                  
     Selection:
       description: Kompletterande filter med urvalsgrupper
       allOf:
@@ -1403,63 +1449,110 @@ components:
               description: Anger identiteten (uuid) för det specifika valet ur urvalsgruppen
               example: c387aad1-9b4b-4c8c-ad0d-0bb4eaf605d6
 
-    TextQuery:
-      description: Sökfråga som används för att sätta villkor för textsökning
-      allOf:
-        - $ref: '#/components/schemas/Expression'
-        - type: object
-          required:
-            - matching_text
-            - proper_name_search
-          properties:
-            matching_text:
-              type: string
-              description: Söktext
-              example: þaiR
-            proper_name_search:
-              type: string
-              description: |
-                Anger hur/om sökning skall ske i egennamn.
-                Notera att namnfrågor enbart är relevanta hos normaliseringar.
-              enum:
-                - INCLUDE
-                - EXCLUDE
-                - ONLY
-            runetexttype_id:
-              description: |
-                Anger identiteten för en specifik runtexttyp (översättning, translittering eller normalisering) sökningen skall ske i.
-                Möjliga värden som kan anges är summan av alla runtexttyper, dvs förekommande översättningar, translittereringar eller normaliseringar.
-              type: string
-              enum:
-                - RUN
-                - FVN
-                - NFS
-                - EN
-                - NO
-                - SV
-              example: FVN
+    TextQueryGroup:
+      description: |
+        En fråga som för varje variant (P, Q, R, ...) kollar om texter och översättningar matchar
+        samtliga angivna villkor (textQueries, notTextQueries, translationQueries och
+        notTranslationQueries).
+        
+        Alla TextQuery i textQueries ska matcha samma ordindex i det olika texterna i en 
+        variant för att en inskrift ska inkluderas i svaret. D v s om en TextQuery matchar ord 3
+        och 5, och den andra matchar ord 5 så är det en träff, men om den andra matchar ord 2 och
+        4 så är det ingen träff.
+        
+        Fältet translationQueries bryr sig inte om vilket ord det gäller, utan där behöver bara
+        sökningen matcha något ord över huvud taget.
+        
+        Det är alltså AND mellan frågorna i textQueries och translationQueries, d v s alla
+        frågor där måste returnera träff för att det ska bli träff för hela TextQueryGroupen.
 
-    Year:
-      description: Anger årtal för att kunna uttrycka frågor av typen "sök runinskrifter daterade till år 1066".
-      # TODO: Är detta bara ett specialfall av TimeInterval?
+        De två negativa varianterna notTextQueries och notTranslationQueries bryr sig inte om
+        ordindex: får någon av dessa en träff går inskriften bort direkt. Det är alltså OR som gäller
+        här.
+
+        Om ett fält är en tom array eller null räknas det inte med. Om alla fält skulle vara tomma
+        returneras alla inskrifter som matchande.
       allOf:
         - $ref: '#/components/schemas/Expression'
         - type: object
-          required:
-            - year
           discriminator:
             propertyName: op
           properties:
-            year:
-              type: integer
-              description: Anger årtalet.
-              minLength: 1
-              maxLength: 4
-              example: 1066
+            textQueries:
+              type: array
+              items:
+                $ref: '#/components/schemas/TextQuery'
+            notTextQueries:
+              type: array
+              items:
+                $ref: '#/components/schemas/TextQuery'
+            translationQueries:
+              type: array
+              items:
+                $ref: '#/components/schemas/TranslationQuery'
+            notTranslationQueries:
+              type: array
+              items:
+                $ref: '#/components/schemas/TranslationQuery'
+
+    TextQuery:
+      description: Sökfråga som används för att sätta villkor för textsökning
+      type: object
+      required:
+        - matching_text
+        - proper_name_search
+        - runetexttype_id
+      properties:
+        matching_text:
+          type: string
+          description: Söktext
+          example: þaiR
+        proper_name_search:
+          type: string
+          description: |
+            Anger hur/om sökning skall ske i egennamn.
+            Notera att namnfrågor enbart är relevanta hos normaliseringar.
+          enum:
+            - INCLUDE
+            - EXCLUDE
+            - ONLY
+        runetexttype_id:
+          description: |
+            Anger identiteten för en specifik runtexttyp (translittering eller normalisering) sökningen skall ske i.
+            Möjliga värden som kan anges är summan av alla runtexttyper.
+          type: string
+          enum:
+            - RUN
+            - FVN
+            - NFS
+          example: FVN
+
+    TranslationQuery:
+      description: Sökfråga som används för att sätta villkor för textsökning i översättning.
+      type: object
+      required:
+        - matching_text
+        - translationtype_id
+      properties:
+        matching_text:
+          type: string
+          description: Söktext
+          example: sten
+        translationtype_id:
+          description: |
+            Anger språk för den översättning som ska sökas i.
+          type: string
+          enum:
+            - EN
+            - NO
+            - SV
+          example: SV
 
     TimeInterval:
-      description: Anger årtalsbaserat intervall för att kunna uttrycka frågor av typen "sök runinskrifter daterade inom intervallet år 800-900".
-      # TODO: Menar vi att en inskrifts tpq och taq ska vara inom detta intervall, eller att detta intervall ska vara inom inskriftens tpq och taq?
+      description: |
+        Anger årtalsbaserat intervall för att kunna uttrycka frågor av typen "sök runinskrifter daterade inom intervallet år 800-900".
+        Om antingen from_year eller to_year faller inom perioden som definieras av inskriftens tpq och taq så är det en träff. 
+        Kan även användas för sökning på enskilt årtal. Då sättes to_year till samma värde som from_year.
       allOf:
         - $ref: '#/components/schemas/Expression'
         - type: object
@@ -1469,13 +1562,13 @@ components:
           properties:
             from_year:
               type: integer
-              description: Anger start årtal för intervallet. Angivet årtal inkluderas i sökningen.
+              description: Anger start-årtal för intervallet. Angivet årtal inkluderas i sökningen.
               minLength: 1
               maxLength: 4
               example: 800
             to_year:
               type: integer
-              description: Anger slut årtal för intervallet. Angivet årtal inkluderas i sökningen.
+              description: Anger slut-årtal för intervallet. Angivet årtal inkluderas i sökningen.
               minLength: 1
               maxLength: 4
               example: 900
@@ -1486,8 +1579,7 @@ components:
         - $ref: '#/components/schemas/And'
         - $ref: '#/components/schemas/Or'
         - $ref: '#/components/schemas/Not'
-        - $ref: '#/components/schemas/TextQuery'
-        - $ref: '#/components/schemas/Year'
+        - $ref: '#/components/schemas/TextQueryGroup'
         - $ref: '#/components/schemas/Selection'
         - $ref: '#/components/schemas/TimeInterval'
       discriminator:
