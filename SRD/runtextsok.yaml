@@ -965,7 +965,7 @@ components:
             - IS
             - IM
             - LV
-            - NO
+            - "NO"
             - NL
             - RU
             - SE
@@ -1231,7 +1231,7 @@ components:
             type: string
             enum:
               - EN
-              - NO
+              - "NO"
               - SV
           example: "[EN, NO, SV]"
 
@@ -1544,7 +1544,7 @@ components:
           type: string
           enum:
             - EN
-            - NO
+            - "NO"
             - SV
           example: SV
 
