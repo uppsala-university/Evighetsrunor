@@ -825,12 +825,26 @@ components:
       properties:
         material:
           description: Anger det material som inskriftsbäraren består av.
-          type: string
-          example: granit
+          type: object
+          properties:
+            material:
+              type: string
+              example: granit
+            uuid:
+              type: string
+              format: uuid
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         material_type:
           description: Anger typen i form av grov indelning av det material som inskriftsbäraren består av.
-          type: string
-          example: sten
+          type: object
+          properties:
+            material_type:
+              type: string
+              example: sten
+            uuid:
+              type: string
+              format: uuid
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
 
     PagedRunicInscriptionResponse:
       type: object
@@ -882,6 +896,10 @@ components:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad.
           type: string
           example: Pr3
+        uuid:
+          type: string
+          format: uuid
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         certainty:
           description: Anger säkerhetsfaktorn för bedömningen. "Det här är definitivt profilstil 2"
           type: boolean
@@ -893,39 +911,70 @@ components:
       properties:
         place:
           description: Anger platsen för var inskriftsbäraren ursprungligen kommer från.
-          type: string
-          example: Resmo kyrka
+          type: object
+          properties:
+            place:
+              type: string
+              example: Resmo kyrka
+            uuid:
+              format: uuid
+              type: string
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         parish:
           description: Anger ev. namn på socken där inskriftsbäraren hittades.
-          type: string
-          nullable: true
-          example: Bro socken
+          $ref: '#/components/schemas/Parish'
         old_parish:
           description: Anger ev. tidigare namn på socken där inskriftsbäraren hittades.
-          type: string
-          nullable: true
-          example: Bro socken
+          $ref: '#/components/schemas/Parish'
         hundred:
           description: Anger ev. namn på härad där inskriftsbäraren hittades.
-          type: string
           nullable: true
-          example: Vallentuna hd
+          type: object
+          properties:
+            hundred:
+              type: string
+              example: Vallentuna hd
+            uuid:
+              format: uuid
+              type: string
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         province:
           description: Anger ev. namn på landskap där inskriftsbäraren hittades.
-          type: string
           nullable: true
-          example: Västra götaland
+          type: object
+          properties:
+            province:
+              type: string
+              example: Västra götaland
+            uuid:
+              format: uuid
+              type: string
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         county:
           description: Anger ev. namn på län där inskriftsbäraren hittades.
-          type: string
           nullable: true
-          example: Gotland
+          type: object
+          properties:
+            county:
+              type: string
+              example: Gotland
+            uuid:
+              format: uuid
+              type: string
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         municipality:
           description: Anger ev. namn på kommun där inskriftsbäraren hittades.
-          type: string
           nullable: true
-          example: Rättvik
-        country_code:
+          type: object
+          properties:
+            municipality:
+              type: string
+              example: Rättvik
+            uuid:
+              format: uuid
+              type: string
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+        country:
           description: |
             Anger landskod för ev. förekommande land där inskriftsbäraren hittades.
             - DK sv: 'Danmark', en: 'Denmark'
@@ -949,31 +998,51 @@ components:
             - TR sv: 'Turkiet', en: 'Turkey'
             - UA sv: 'Ukraina', en: 'Ukraine'
             - PL sv: 'Polen', en: 'Poland'
-          type: string
-          enum:
-            - DK
-            - DE
-            - FI
-            - FO
-            - FR
-            - GL
-            - GR
-            - GB_en
-            - GB_sc
-            - IE
-            - IT
-            - IS
-            - IM
-            - LV
-            - "NO"
-            - NL
-            - RU
-            - SE
-            - TR
-            - UA
-            - PL
           nullable: true
-          example: SE
+          type: object
+          properties:
+            country_code:
+              type: string
+              enum:
+                - DK
+                - DE
+                - FI
+                - FO
+                - FR
+                - GL
+                - GR
+                - GB_en
+                - GB_sc
+                - IE
+                - IT
+                - IS
+                - IM
+                - LV
+                - "NO"
+                - NL
+                - RU
+                - SE
+                - TR
+                - UA
+                - PL
+              example: SE
+            uuid:
+              format: uuid
+              type: string
+              example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+
+    Parish:
+      nullable: true
+      type: object
+      properties:
+        parish:
+          type: string
+          example: Bro socken
+        uuid:
+          format: uuid
+          type: string
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+
 
     OriginalLocation:
       description: Grundinformation om en inskriftsbärares ursprungliga placering.
@@ -1045,11 +1114,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Cross'
-        artefact:
-          description: Anger vilken typ av föremål inskriftsbäraren är av.
-          nullable: true
-          type: string
-          example: runsten
+        artefacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Artefact'
+        bracteate_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/BracteateType'
         runic_types:
           description: Anger vilka typer av runor som använts i inskriften.
           type: array
@@ -1061,11 +1133,7 @@ components:
           items:
             $ref: '#/components/schemas/RunicTypeDescription'
         period:
-          description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
-            Är i praktiken även en grov tidsangivelse för inskriften.
-          type: string
-          nullable: true
-          example: Vikingatid
+          $ref: '#/components/schemas/Period'
         material:
           $ref: '#/components/schemas/RunicMaterial'
         carver:
@@ -1115,6 +1183,45 @@ components:
             - 'Fv 1975:170'
             - 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
             - 'Andersson 1998b'
+
+    Period:
+      description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
+        Är i praktiken även en grov tidsangivelse för inskriften.
+      type: object
+      nullable: true
+      properties:
+        period:
+          type: string
+          example: Vikingatid
+        uuid:
+          type: string
+          format: uuid
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+
+
+    BracteateType:
+      description: Anger vilken brakteattyp inskriften klassas som.
+      type: object
+      properties:
+        type:
+          type: string
+          example: B
+        uuid:
+          type: string
+          format: uuid
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
+
+    Artefact:
+      description: Anger vilka typer av föremål inskriftsbäraren är av.
+      type: object
+      properties:
+        artefact:
+          type: string
+          example: runsten
+        uuid:
+          type: string
+          format: uuid
+          example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
 
     RunicInscriptionIndex:
       description: Objektrepresentation av ett sökresultat från en s.k. 'Enkel sökning' efter signum.
@@ -1386,51 +1493,7 @@ components:
           type: string
           description: Anger id för önskad utgåva som sökningen ska utföras på.
           example: "2020"
-      example: |
-        {
-          "edition_id": "2020",
-          "expression": {
-            "op": "And",
-            "expressions": [
-              {
-                "op": "TimeInterval",
-                "from_year": 900,
-                "to_year": 999
-              },
-              {
-                "op": "TextQueryGroup",
-                "textQueries": [
-                  {
-                    "op": "TextQuery",
-                    "matching_text": "auk",
-                    "proper_name_search": "EXCLUDE",
-                    "runetexttype_id": "RUN"
-                  },
-                  {
-                    "op": "TextQuery",
-                    "matching_text": "ok",
-                    "proper_name_search": "EXCLUDE",
-                    "runetexttype_id": "FVN"
-                  }
-                ],
-                "notTranslationQueries": [
-                  {
-                    "op": "TranslationQuery",
-                    "matching_text": "_Ant_",
-                    "translationtype_id": "EN"
-                  }
-                ],
-                "translationQueries": [
-                  {
-                    "op": "TranslationQuery",
-                    "matching_text": "father",
-                    "translationtype_id": "EN"
-                  }
-                ]
-              }
-            ]
-          }
-        }                  
+
     Selection:
       description: Kompletterande filter med urvalsgrupper
       allOf:
