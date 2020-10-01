@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.18
+  version: 0.9.19
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -783,36 +783,36 @@ components:
           description: Anger språket som translitterering är uttryckt i.
           example: Fornvästnordiska.
 
-    Nmr:
+    Her:
       type: object
-      description: Objektrepresentation av National Monument Registers (NMR) identifierare kopplade till inskriftsbäraren i andra informationssystem.
+      description: Objektrepresentation av Historic Environment Registers (HER) identifierare kopplade till inskriftsbäraren i andra informationssystem.
       properties:
         country:
-          description: Anger vilket land de kopplade NMR-identiteterna tillhör.
+          description: Anger vilket land de kopplade HER-identiteterna tillhör.
             Danmark, Skottland, Norge, Sverige
           type: string
           enum:
-            - dk
-            - gb_sc
-            - "no" # Use quotes to avoid parsing no as false. https://github.com/swagger-api/swagger-parser/issues/1205
-            - se
+            - DK
+            - GB-SCT
+            - "NO" # Use quotes to avoid parsing no as false. https://github.com/swagger-api/swagger-parser/issues/1205
+            - SE
           example: se
         identifiers:
-          description: Array över nmr-identiteter.
+          description: Array över her-identiteter.
           type: array
           items:
-            $ref: '#/components/schemas/NmrIdentifier'
+            $ref: '#/components/schemas/HerIdentifier'
 
-    NmrIdentifier:
+    HerIdentifier:
       type: object
-      description: Objektrepresentation av en nyckel-värde par för en nmr-identifiere.
+      description: Objektrepresentation av en nyckel-värde par för en her-identifiere.
       properties:
         key:
-          description: Anger typen av nmr-identitet.
+          description: Anger typen av her-identitet.
           type: string
           example: fmisid
         value:
-          description: Anger värdet för nmr-identiteten.
+          description: Anger värdet för her-identiteten.
           type: string
           example: abc123
 
@@ -984,8 +984,8 @@ components:
             - FR sv: 'Frankrike', en: 'France'
             - GL sv: 'Grönland', en: 'Greenland'
             - GR sv: 'Grekland', en: 'Greece'
-            - GB_en sv: 'Storbritannien', en: 'United Kingdom'
-            - GB_sc sv: 'Skottland', en: 'Scotland'
+            - GB-ENG sv: 'England', en: 'England'
+            - GB-SCT sv: 'Skottland', en: 'Scotland'
             - IE sv: 'Irland', en: 'Ireland'
             - IT sv: 'Italien', en: 'Italy'
             - IS sv: 'Island', en: 'Iceland'
@@ -1011,8 +1011,8 @@ components:
                 - FR
                 - GL
                 - GR
-                - GB_en
-                - GB_sc
+                - GB-ENG
+                - GB-SCT
                 - IE
                 - IT
                 - IS
@@ -1127,11 +1127,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RunicType'
-        runic_type_descriptions:
-          description: Anger fritextbeskrivningar av de typer av runor som använts i inskriften.
-          type: array
-          items:
-            $ref: '#/components/schemas/RunicTypeDescription'
+        runic_type_description:
+          description: Anger fritextbeskrivning av de typer av runor som använts i inskriften.
+          $ref: '#/components/schemas/RunicTypeDescription'
         period:
           $ref: '#/components/schemas/Period'
         material:
@@ -1146,11 +1144,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProfileStyle'
-        nmr_identifiers:
+        her_identifiers:
           description: Identifierare för objekt som motsvarar inskriftsbäraren i andra informationssystem (National Monument Registers).
           type: array
           items:
-            $ref: '#/components/schemas/Nmr'
+            $ref: '#/components/schemas/Her'
         notes:
           description: Fritextfält för beskrivning av inskriftsbäraren.
           type: array
@@ -1314,33 +1312,65 @@ components:
         normalisation:
           description: |
             Anger lista av unika stabila identiteter av normaliseringar av runtexter.
-            En normalisering är en översättning av runtexten till något av de förekommande språk som definieras nedan.
-            * FVN (Fornvästnordiska). Normalisering (översättning) av runtexten till fornvästnordiska.
-            Notera att vissa runinskrifter saknar normalisering på fornvästnordiska.
-            * NFS (Nationellt fornspråk). Normalisering (översättning) av runtexten till annat språk än fornvästnordiska.
-            Notera att vissa runinskrifter saknar normalisering till nationellt fornspråk.
+            En normalisering är en översättning av runtexten till något eller några av de förekommande språk som definieras nedan.
+            * FVN (Fornvästnordiska)
+            * NFS (Nationellt fornspråk)
+            * DSV (Dalmål)
+            * FDA (Forndanska)
+            * FGU (Forngutniska)
+            * FIS (Fornisländska)
+            * FNO (Fornnorska)
+            * FÖN (Fornöstnordiska)
+            * FSV (Fornsvenska)
+            * LAT (Latin)
+            * NON (Fornnordiska)
+            * NSV (Nysvenska)
+            * OVD (Älvdalska)
+            * RDA (Rundanska)
+            * RSV (Runsvenska)
+            * und (Okänd)
+            * URN (Urnordiska)
           type: array
           items:
             type: string
             enum:
               - FVN
               - NFS
+              - DSV
+              - FDA
+              - FGU
+              - FIS
+              - FNO
+              - FÖN
+              - FSV
+              - LAT
+              - NON
+              - NSV
+              - OVD
+              - RDA
+              - RSV
+              - und
+              - URN
           example: "[FVN, NFS]"
         translation:
           description: |
             Anger lista av unika stabila identiteter av översättningar av runtexter.
             Följande språköversättningar förekommer.
-            * EN (Engelska). Normalisering (översättning) av runtexten till engelska. Notera att vissa runinskrifter saknar översättning på engelska.
-            * NO (Norska). Normalisering (översättning) av runtexten till norska. Notera att vissa runinskrifter saknar översättning på norska.
-            * SV (Svenska). Normalisering (översättning) av runtexten till svenska. Notera att vissa runinskrifter saknar översättning på svenska.
+            * da-dk (Danska). Normalisering (översättning) av runtexten till danska. Notera att vissa runinskrifter saknar översättning på danska.
+            * en-gb (Engelska). Normalisering (översättning) av runtexten till engelska. Notera att vissa runinskrifter saknar översättning på engelska.
+            * nb-no (Bokmål). Normalisering (översättning) av runtexten till bokmål. Notera att vissa runinskrifter saknar översättning på bokmål.
+            * nn-no (Nynorsk). Normalisering (översättning) av runtexten till nynorsk. Notera att vissa runinskrifter saknar översättning på nynorsk.
+            * sv-se (Svenska). Normalisering (översättning) av runtexten till svenska. Notera att vissa runinskrifter saknar översättning på svenska.
           type: array
           items:
             type: string
             enum:
-              - EN
-              - "NO"
-              - SV
-          example: "[EN, NO, SV]"
+              - da-dk
+              - en-gb
+              - nb-no
+              - nn-no
+              - sv-se
+          example: "[en-gb, nb-no, sv-se]"
 
     RunicInscriptionGeoPosition:
       description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
@@ -1588,6 +1618,21 @@ components:
             - RUN
             - FVN
             - NFS
+            - DSV
+            - FDA
+            - FGU
+            - FIS
+            - FNO
+            - FÖN
+            - FSV
+            - LAT
+            - NON
+            - NSV
+            - OVD
+            - RDA
+            - RSV
+            - und
+            - URN
           example: FVN
 
     TranslationQuery:
