@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.19
+  version: 0.9.20
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -766,6 +766,7 @@ components:
           type: array
           items:
             type: number
+            format: double
             example: "18.31511, 57.159624"
 
     Interpretation:
@@ -778,10 +779,10 @@ components:
           nullable: true
           example: Bengt lät resa denna sten efter sin moder...  (på fornnordiska)
         language:
-          type: string
+          type: object
           nullable: true
           description: Anger språket som translitterering är uttryckt i.
-          example: Fornvästnordiska.
+          $ref: '#/components/schemas/RunicLanguage'
 
     Her:
       type: object
@@ -790,13 +791,22 @@ components:
         country:
           description: Anger vilket land de kopplade HER-identiteterna tillhör.
             Danmark, Skottland, Norge, Sverige
-          type: string
-          enum:
-            - DK
-            - GB-SCT
-            - "NO" # Use quotes to avoid parsing no as false. https://github.com/swagger-api/swagger-parser/issues/1205
-            - SE
-          example: se
+          type: object
+          properties:
+            country_code:
+              type: string
+              enum:
+                - DK
+                - GB-SCT
+                - "NO" # Use quotes to avoid parsing no as false. https://github.com/swagger-api/swagger-parser/issues/1205
+                - SE
+              example: SE
+            sv:
+              type: string
+              example: Sverige
+            en:
+              type: string
+              example: Sweden
         identifiers:
           description: Array över her-identiteter.
           type: array
@@ -896,6 +906,12 @@ components:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad.
           type: string
           example: Pr3
+        sv:
+          type: string
+          example: Profilstil 3
+        en:
+          type: string
+          example: Profile style 3
         uuid:
           type: string
           format: uuid
@@ -1026,6 +1042,12 @@ components:
                 - UA
                 - PL
               example: SE
+            sv:
+              type: string
+              example: Sverige
+            en:
+              type: string
+              example: Sweden
             uuid:
               format: uuid
               type: string
@@ -1190,7 +1212,13 @@ components:
       properties:
         period:
           type: string
+          example: V
+        sv:
+          type: string
           example: Vikingatid
+        en:
+          type: string
+          example: Viking age
         uuid:
           type: string
           format: uuid
@@ -1332,26 +1360,7 @@ components:
             * URN (Urnordiska)
           type: array
           items:
-            type: string
-            enum:
-              - FVN
-              - NFS
-              - DSV
-              - FDA
-              - FGU
-              - FIS
-              - FNO
-              - FÖN
-              - FSV
-              - LAT
-              - NON
-              - NSV
-              - OVD
-              - RDA
-              - RSV
-              - und
-              - URN
-          example: "[FVN, NFS]"
+            $ref: '#/components/schemas/RunicLanguage'
         translation:
           description: |
             Anger lista av unika stabila identiteter av översättningar av runtexter.
@@ -1363,14 +1372,59 @@ components:
             * sv-se (Svenska). Normalisering (översättning) av runtexten till svenska. Notera att vissa runinskrifter saknar översättning på svenska.
           type: array
           items:
-            type: string
-            enum:
-              - da-dk
-              - en-gb
-              - nb-no
-              - nn-no
-              - sv-se
-          example: "[en-gb, nb-no, sv-se]"
+            $ref: '#/components/schemas/ModernLanguage'
+
+    RunicLanguage:
+      description: De språk som förekommer i runinskrifter
+      type: object
+      properties:
+        language_code:
+          type: string
+          enum:
+            - FVN
+            - NFS
+            - DSV
+            - FDA
+            - FGU
+            - FIS
+            - FNO
+            - FÖN
+            - FSV
+            - LAT
+            - NON
+            - NSV
+            - OVD
+            - RDA
+            - RSV
+            - und
+            - URN
+          example: FVN
+        sv:
+          type: string
+          example: Fornvästnordiska
+        en:
+          type: string
+          example: Old West Norse
+
+    ModernLanguage:
+      description: Språk som förekommer i översättningar och andra fält
+      type: object
+      properties:
+        language_code:
+          type: string
+          enum:
+            - da-dk
+            - en-gb
+            - nb-no
+            - nn-no
+            - sv-se
+          example: en-gb
+        sv:
+          type: string
+          example: Engelska
+        en:
+          type: string
+          example: English
 
     RunicInscriptionGeoPosition:
       description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
@@ -1439,9 +1493,9 @@ components:
           nullable: true
           example: o-runan har dubbelsidig bistav
         language:
-          type: string
+          type: Object
           nullable: true
-          example: sv-se
+          $ref: '#/components/schemas/ModernLanguage'
 
     SearchResult:
       description: Resultat av en sökfråga
@@ -1506,9 +1560,9 @@ components:
           example: Bengt raised this stone...
         language:
           description: Anger språket som översättningen är uttryckt i.
-          type: string
+          type: object
           nullable: true
-          example: Engelska
+          $ref: '#/components/schemas/ModernLanguage'
 
     SearchQuery:
       description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning
@@ -1651,10 +1705,12 @@ components:
             Anger språk för den översättning som ska sökas i.
           type: string
           enum:
-            - EN
-            - "NO"
-            - SV
-          example: SV
+            - da-dk
+            - en-gb
+            - nb-no
+            - nn-no
+            - sv-se
+        example: en-gb
 
     TimeInterval:
       description: |
