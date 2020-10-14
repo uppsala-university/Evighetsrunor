@@ -1710,7 +1710,7 @@ components:
             - nb-no
             - nn-no
             - sv-se
-        example: en-gb
+          example: en-gb
 
     TimeInterval:
       description: |
