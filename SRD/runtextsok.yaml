@@ -460,6 +460,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResult'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
@@ -1567,7 +1573,8 @@ components:
     SearchQuery:
       description: Sökfråga som används för att sätta sökvillkor vid avancerad sökning
       required:
-        - query
+        - expression
+        - edition_id
       type: object
       properties:
         expression:
