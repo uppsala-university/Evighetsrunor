@@ -785,9 +785,7 @@ components:
           nullable: true
           example: Bengt lät resa denna sten efter sin moder...  (på fornnordiska)
         language:
-          type: object
-          nullable: true
-          description: Anger språket som translitterering är uttryckt i.
+          # Anger språket som translitterering är uttryckt i.
           $ref: '#/components/schemas/RunicLanguage'
 
     Her:
@@ -943,10 +941,10 @@ components:
               type: string
               example: ccf0a7f9-1f4c-421f-a321-0e36daea43eb
         parish:
-          description: Anger ev. namn på socken där inskriftsbäraren hittades.
+          # Anger ev. namn på socken där inskriftsbäraren hittades.
           $ref: '#/components/schemas/Parish'
         old_parish:
-          description: Anger ev. tidigare namn på socken där inskriftsbäraren hittades.
+          # Anger ev. tidigare namn på socken där inskriftsbäraren hittades.
           $ref: '#/components/schemas/Parish'
         hundred:
           description: Anger ev. namn på härad där inskriftsbäraren hittades.
@@ -1156,7 +1154,7 @@ components:
           items:
             $ref: '#/components/schemas/RunicType'
         runic_type_description:
-          description: Anger fritextbeskrivning av de typer av runor som använts i inskriften.
+          # Anger fritextbeskrivning av de typer av runor som använts i inskriften.
           $ref: '#/components/schemas/RunicTypeDescription'
         period:
           $ref: '#/components/schemas/Period'
@@ -1499,8 +1497,6 @@ components:
           nullable: true
           example: o-runan har dubbelsidig bistav
         language:
-          type: Object
-          nullable: true
           $ref: '#/components/schemas/ModernLanguage'
 
     SearchResult:
@@ -1565,9 +1561,7 @@ components:
           nullable: true
           example: Bengt raised this stone...
         language:
-          description: Anger språket som översättningen är uttryckt i.
-          type: object
-          nullable: true
+          # Anger språket som översättningen är uttryckt i.
           $ref: '#/components/schemas/ModernLanguage'
 
     SearchQuery:
@@ -1578,7 +1572,7 @@ components:
       type: object
       properties:
         expression:
-          description: Uttryck bestående av olika villkor, kombinerade med AND, OR och NOT
+          # Uttryck bestående av olika villkor, kombinerade med AND, OR och NOT
           $ref: '#/components/schemas/Expression'
         edition_id:
           type: string
