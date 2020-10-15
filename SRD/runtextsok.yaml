@@ -1780,7 +1780,7 @@ components:
         - $ref: '#/components/schemas/Expression'
         - type: object
           required:
-            - child
+            - expression
           discriminator:
             propertyName: op
           properties:
@@ -1802,6 +1802,7 @@ components:
           properties:
             expressions:
               type: array
+              minItems: 1
               items:
                 $ref: '#/components/schemas/Expression'
 
@@ -1818,5 +1819,6 @@ components:
           properties:
             expressions:
               type: array
+              minItems: 1
               items:
                 $ref: '#/components/schemas/Expression'
