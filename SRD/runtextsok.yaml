@@ -685,6 +685,11 @@ components:
           type: string
           example:
             3
+        certainty:
+          description: Anger visshet för klassificeringen
+          type: boolean
+          example:
+            true
 
     Echo:
       type: object
@@ -1162,9 +1167,28 @@ components:
           $ref: '#/components/schemas/RunicMaterial'
         carver:
           description: Anger vem som ristat inskriften.
-          type: string
-          nullable: true
-          example: 'Torsten (A) [Källström 2007a:269]'
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Torsten
+              certainty:
+                type: boolean
+                example: true
+              attribution:
+                type: string
+                enum:
+                  - attributed
+                  - signed
+                  - similar
+                  - "signed on pair stone"
+                example: attributed
+              notes:
+                type: string
+                example: Källström 2007a:269
+                nullable: true
         profile_style:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
           type: array
