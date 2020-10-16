@@ -1189,6 +1189,10 @@ components:
                 type: string
                 example: Källström 2007a:269
                 nullable: true
+              uuid:
+                type: string
+                format: uuid
+                example: 8ef77b1e-2521-4dcc-b960-f97b66971b4a
         profile_style:
           description: Anger med vilken profilstil som inskriftsbäraren är ristad. Används bara om inskriftsbäraren är en runsten.
           type: array
