@@ -1230,11 +1230,19 @@ components:
           description: Innehåller array av referenser till objektet. Referenserna finns lagrade i SRDs databas och skördas ej till K-samsök.
           type: array
           items:
+            $ref: '#/components/schemas/Reference'
+
+    Reference:
+      description: En källhänvisning.
+      type: object
+      properties:
+          reference:
             type: string
-          example:
-            - 'Fv 1975:170'
-            - 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
-            - 'Andersson 1998b'
+            example: "$=Plansch IV fig. 2, 145ff; BN 2"
+          uri:
+            type: string
+            nullable: true
+            example: 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
 
     Period:
       description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
