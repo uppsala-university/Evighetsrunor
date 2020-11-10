@@ -1437,6 +1437,23 @@ components:
         en:
           type: string
           example: Old West Norse
+        inscriptions:
+          description:
+            Antalet inskrifter med en normalisering på det här språket. Om värdet är null har det
+            inte räknats ut för det aktuella anropet.
+          type: integer
+          nullable: true
+          example: 2301
+        position:
+          description:
+            Föreslagen position (0-indexerad) i en ordnad lista över alla språk, t ex i en meny.
+            Runtext har implicit position 0.
+            Kan vara null, om språket inte har en definierad position. Det kan antingen bero på att
+            det returnerade språket inte är del av an list med språk eller att positionen inte är
+            definierad i APIet.
+          type: integer
+          nullable: true
+          example: 1
 
     ModernLanguage:
       description: Språk som förekommer i översättningar och andra fält
@@ -1457,6 +1474,23 @@ components:
         en:
           type: string
           example: English
+        inscriptions:
+          description:
+            Antalet inskrifter med en översättning till det här språket. Om värdet är null har det
+            inte räknats ut för det aktuella anropet.
+          type: integer
+          nullable: true
+          example: 102
+        position:
+          description:
+            Föreslagen position (0-indexerad) i en ordnad lista över alla språk, t ex i en meny.
+            Runtext har implicit position 0.
+            Kan vara null, om språket inte har en definierad position. Det kan antingen bero på att
+            det returnerade språket inte är del av an list med språk eller att positionen inte är
+            definierad i APIet.
+          type: integer
+          nullable: true
+          example: 20
 
     RunicInscriptionGeoPosition:
       description: Objektrepresentation av en inskriftsbärares geografiska positioner med nuvarande och ev. ursprungligt läge att rendera på en bakgrundskarta
@@ -1630,15 +1664,15 @@ components:
         En fråga som för varje variant (P, Q, R, ...) kollar om texter och översättningar matchar
         samtliga angivna villkor (textQueries, notTextQueries, translationQueries och
         notTranslationQueries).
-        
-        Alla TextQuery i textQueries ska matcha samma ordindex i det olika texterna i en 
+
+        Alla TextQuery i textQueries ska matcha samma ordindex i det olika texterna i en
         variant för att en inskrift ska inkluderas i svaret. D v s om en TextQuery matchar ord 3
         och 5, och den andra matchar ord 5 så är det en träff, men om den andra matchar ord 2 och
         4 så är det ingen träff.
-        
+
         Fältet translationQueries bryr sig inte om vilket ord det gäller, utan där behöver bara
         sökningen matcha något ord över huvud taget.
-        
+
         Det är alltså AND mellan frågorna i textQueries och translationQueries, d v s alla
         frågor där måste returnera träff för att det ska bli träff för hela TextQueryGroupen.
 
@@ -1744,7 +1778,7 @@ components:
     TimeInterval:
       description: |
         Anger årtalsbaserat intervall för att kunna uttrycka frågor av typen "sök runinskrifter daterade inom intervallet år 800-900".
-        Om antingen from_year eller to_year faller inom perioden som definieras av inskriftens tpq och taq så är det en träff. 
+        Om antingen from_year eller to_year faller inom perioden som definieras av inskriftens tpq och taq så är det en träff.
         Kan även användas för sökning på enskilt årtal. Då sättes to_year till samma värde som from_year.
       allOf:
         - $ref: '#/components/schemas/Expression'
