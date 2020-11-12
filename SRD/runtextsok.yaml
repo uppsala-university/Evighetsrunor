@@ -1149,6 +1149,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Artefact'
+        artefact:
+          description: Fritextversion av artefacts.
+          type: string
         bracteate_types:
           type: array
           items:
@@ -1231,18 +1234,74 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Reference'
+        sources:
+          description: Innehåller array av källor till objektet.
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+        dating:
+          $ref: '#/components/schemas/Dating'
+        termini:
+          $ref: '#/components/schemas/Termini'
+        findnumbers:
+          description: Innehåller array av fyndnummer, i fritextform.
+          type: array
+          items:
+            type: string
+
+    Termini:
+      description: Anger tidigast och senast år.
+      properties:
+        tpq:
+          description:
+            Terminus post quem ("tpq") är latin och betyder ungefär tidpunkt efter vilken ~ (någonting måste ha ägt rum).
+            Det används i betydelsen tidigast, i sammanhang där man inte alltid exakt kan fastställa en ålder.
+          type: integer
+          example: 1000
+        taq:
+          description:
+            Terminus ante quem (taq) är latin och betyder ungefär tidpunkt före vilken ~ (någonting måste ha ägt rum).
+            Det används i betydelsen senast i sammanhang där man inte exakt kan fastställa en ålder.
+          type: integer
+          example: 1200
+
+    Dating:
+      description: En dateringar.
+      type: object
+      properties:
+        dating:
+          type: string
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+
+    Source:
+      description: En källa.
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        year:
+          type: string
+        abbreviation:
+          type: string
+        uri:
+          type: string
 
     Reference:
       description: En källhänvisning.
       type: object
       properties:
-          reference:
-            type: string
-            example: "$=Plansch IV fig. 2, 145ff; BN 2"
-          uri:
-            type: string
-            nullable: true
-            example: 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
+        reference:
+          type: string
+          example: "$=Plansch IV fig. 2, 145ff; BN 2"
+        uri:
+          type: string
+          nullable: true
+          example: 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
 
     Period:
       description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
