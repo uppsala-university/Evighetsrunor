@@ -1378,6 +1378,10 @@ components:
         position:
           # Anger geografisk information om inskriftsbärarens position.
           $ref: '#/components/schemas/RunicInscriptionGeoPosition'
+        extant:
+          description: Anger om inskriftsbäraren existerar eller ej.
+          type: boolean
+          example: true
 
     RunicMaterial:
       type: object
@@ -1636,7 +1640,7 @@ components:
       properties:
         # TODO: Ändra namn till inscriptions?
         inscription:
-          $ref: '#/components/schemas/RunicInscription'
+          $ref: '#/components/schemas/RunicInscriptionIndex'
 
     SelectionItem:
       description: Anger ett urval (t ex socken Bro).
