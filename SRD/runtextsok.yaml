@@ -457,9 +457,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SearchResult'
+                $ref: '#/components/schemas/SearchPostResults'
         400:
           description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
           content:
@@ -1632,8 +1630,24 @@ components:
         language:
           $ref: '#/components/schemas/ModernLanguage'
 
+    SearchPostResults:
+      description: Det totala resultatet av en avancerad sökning.
+      properties:
+        number_of_inscriptions:
+          description: Antalet resultat som returneras.
+          type: integer
+        number_of_occurrences:
+          description: Antalet belägg i texterna i de olika inskrifterna.
+          type: integer
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+
+
+
     SearchResult:
-      description: Resultat av en sökfråga
+      description: Ett av flera resultat av en sökfråga.
       required:
         - inscription
       type: object
