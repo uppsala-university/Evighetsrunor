@@ -5,7 +5,7 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix style: <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle/> .
+@prefix style: <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle#> .
 @prefix time: <http://www.w3.org/2006/time#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -20,6 +20,7 @@ style:Rak
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Plain"@en , "Rak"@sv ;
     skos:prefLabel "Plain"@en , "Rak"@sv ;
+    skos:altLabel "Rak" ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "980 CE"@en , "980 v.t."@sv ;
                                             skos:altLabel "980 AD"@en , "980 e.Kr."@sv ;
@@ -35,6 +36,7 @@ style:Fp
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Bird’s-eye view"@en , "Fågelperspektiv"@sv ;
     skos:prefLabel "Bird’s-eye view"@en , "Fågelperspektiv"@sv ;
+    skos:altLabel "Fp" ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1010 CE"@en , "1010 v.t."@sv ;
                                             skos:altLabel "1010 AD"@en , "1010 e.Kr."@sv ;
@@ -50,6 +52,7 @@ style:Pr1
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 1"@en , "Profilstil 1"@sv ;
     skos:prefLabel "Profile style 1"@en , "Profilstil 1"@sv ;
+    skos:altLabel "Pr 1" ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1010 CE"@en , "1010 v.t."@sv ;
                                             skos:altLabel "1010 AD"@en , "1010 e.Kr."@sv ;
@@ -65,6 +68,7 @@ style:Pr2
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 2"@en , "Profilstil 2"@sv ;
     skos:prefLabel "Profile style 2"@en , "Profilstil 2"@sv ;
+    skos:altLabel "Pr 2" ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1020 CE"@en , "1020 v.t."@sv ;
                                             skos:altLabel "1020 AD"@en , "1020 e.Kr."@sv ;
@@ -80,6 +84,7 @@ style:Pr3
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 3"@en , "Profilstil 3"@sv ;
     skos:prefLabel "Profile style 3"@en , "Profilstil 3"@sv ;
+    skos:altLabel "Pr 3" ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1050 CE"@en , "1050 v.t."@sv ;
                                             skos:altLabel "1050 AD"@en , "1050 e.Kr."@sv ;
@@ -96,7 +101,7 @@ style:Pr4
     owl:sameAs aat:300020939 ;
     rdfs:label "Profile style 4"@en , "Urnes style"@en , "Profilstil 4"@sv , "Urnesstil"@sv ;
     skos:prefLabel "Profile style 4"@en , "Profilstil 4"@sv ;
-    skos:altLabel "Urnes style"@en , "Urnesstil"@sv ;
+    skos:altLabel "Pr 4" , "Urnes style"@en , "Urnesstil"@sv ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1070 CE"@en , "1070 v.t."@sv ;
                                             skos:altLabel "1070 AD"@en , "1070 e.Kr."@sv ;
@@ -112,6 +117,7 @@ style:Pr5
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Profile style 5"@en , "Profilstil 5"@sv ;
     skos:prefLabel "Profile style 5"@en , "Profilstil 5"@sv ;
+    skos:altLabel "Pr 5" ;
     time:hasTime [ a time:ProperInterval ;
                    time:intervalStartedBy [ skos:prefLabel "1100 CE"@en , "1100 v.t."@sv ;
                                             skos:altLabel "1100 AD"@en , "1100 e.Kr."@sv ;
@@ -126,9 +132,11 @@ style:Kb
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Cross-band style"@en , "Korsbandstil"@sv ;
-    skos:prefLabel "Cross-band style"@en , "Korsbandstil"@sv .
+    skos:prefLabel "Cross-band style"@en , "Korsbandstil"@sv ;
+    skos:altLabel "Kb" .
 style:Sod
     a skos:Concept ;
     skos:inScheme <http://kulturarvsdata.se/resurser/aukt/srdb/profilestyle> ;
     rdfs:label "Band with ornamental details"@en , "Skriftband med ornamentala detaljer"@sv ;
-    skos:prefLabel "Band with ornamental details"@en , "Skriftband med ornamentala detaljer"@sv .
+    skos:prefLabel "Band with ornamental details"@en , "Skriftband med ornamentala detaljer"@sv ;
+    skos:altLabel "Sod" .
