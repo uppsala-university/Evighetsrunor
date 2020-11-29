@@ -29,7 +29,7 @@ LOCK TABLES `styles` WRITE;
 
 INSERT INTO `styles` (`styleid`, `style`, `sv`, `en`, `TPQ`, `TAQ`)
 VALUES
-	(X'0792BA003BCB459A9DD851F9DBE6F7CC','Sod','Skriftband med ornamentala detaljer','Band with ornamental details',NULL,NULL),
+	(X'0792BA003BCB459A9DD851F9DBE6F7CC','Sod','Skriftband med ornamentala detaljer','Band with ornamental details',1010,1050),
 	(X'2A6BAB7BE0DF49409A607BA4A45647D9','Pr 3','Profilstil 3','Profile style 3',1050,1080),
 	(X'A79B59F7F65D40A280CE67DE2542555C','Pr 5','Profilstil 5','Profile style 5',1100,1130),
 	(X'A83FEBE757974B55964FF8FB9A8102E8','Pr 4','Profilstil 4','Profile style 4',1070,1100),
