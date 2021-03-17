@@ -1296,10 +1296,10 @@ components:
         reference:
           type: string
           example: "$=Plansch IV fig. 2, 145ff; BN 2"
-        uri:
-          type: string
-          nullable: true
-          example: 'http://fornvannen.se/pdf/1970talet/1975_166.pdf'
+        uris:
+          type: array
+          items:
+            type: string
 
     Period:
       description: Anger vilken konvention som använts vid skapandet av läsningen av inskriften.
