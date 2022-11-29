@@ -45,11 +45,11 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Anger id för önskad utgåva.
+          description: Anger id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
-            example: 2020
+            example: "latest"
         - name: matching_text
           in: query
           description: Anger initala tecken i de signum som eftersöks. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
@@ -106,11 +106,11 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Anger id för önskad utgåva.
+          description: Anger id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
-            example: 2020
+            example: "latest"
         - name: matching_text
           in: query
           description: Anger tecken i namnet på plats som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
@@ -158,7 +158,7 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
@@ -192,7 +192,7 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
@@ -230,7 +230,7 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
@@ -306,7 +306,7 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
@@ -394,11 +394,11 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
-            example: "2020"
+            example: "latest"
         - name: matching_text
           in: query
           description: |
@@ -481,7 +481,7 @@ paths:
       parameters:
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
@@ -533,7 +533,7 @@ paths:
             format: uuid
         - name: edition_id
           in: query
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
@@ -605,7 +605,7 @@ paths:
       parameters:
         - name: edition_id
           in: path
-          description: Id för önskad utgåva
+          description: Id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           schema:
             type: string
@@ -1723,8 +1723,8 @@ components:
           $ref: '#/components/schemas/Expression'
         edition_id:
           type: string
-          description: Anger id för önskad utgåva som sökningen ska utföras på.
-          example: "2020"
+          description: Anger id för önskad utgåva som sökningen ska utföras på. Ange "latest" för senaste utgåvan.
+          example: "latest"
 
     Selection:
       description: Kompletterande filter med urvalsgrupper
