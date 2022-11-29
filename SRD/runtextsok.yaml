@@ -113,7 +113,7 @@ paths:
             example: 2020
         - name: matching_text
           in: query
-          description: Anger initiala tecken i namnet på plats som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
+          description: Anger tecken i namnet på plats som eftersöks. Case insensitive, dvs "bor" eller "Bor" ger samma sökresultat.
           schema:
             type: string
             minLength: 2
