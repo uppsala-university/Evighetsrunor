@@ -1763,7 +1763,8 @@ components:
 
         De två negativa varianterna notTextQueries och notTranslationQueries bryr sig inte om
         ordindex: får någon av dessa en träff går inskriften bort direkt. Det är alltså OR som gäller
-        här.
+        här. Om en notTextQuery gäller en runtexttyp som inte finns för en inskrift räknas det som
+        att inskriften inte matchar, och motsvarande för notTranslationQueries.
 
         Om ett fält är en tom array eller null räknas det inte med. Om alla fält skulle vara tomma
         returneras alla inskrifter som matchande.
