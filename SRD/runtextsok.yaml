@@ -1603,6 +1603,10 @@ components:
         oldest_known:
           # Anger inskriftsbärarens äldsta kända position
           $ref: '#/components/schemas/Geometry'
+        extant:
+          description: Anger om inskriftsbäraren existerar eller ej.
+          type: boolean
+          example: true
 
     RunicType:
       description: Anger vilka typer av runor som använts i inskriften.
