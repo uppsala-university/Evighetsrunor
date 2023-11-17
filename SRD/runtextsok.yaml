@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 0.9.20
+  version: 1.0.0
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
