@@ -8,7 +8,7 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 1.0.0
+  version: 1.0.1
 servers:
   - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
@@ -39,7 +39,7 @@ paths:
       summary: Hämtar lista med signum och dess kopplade runinskrifters identiteter.
       description: |
         Hämtar en lista med signum  och dess kopplade runinskrifters identiteter (uuid). <br>
-        Lämpligt att användas för typeahead ändamål vid sökning/hämtning av signum. <br>
+        Lämpligt att användas för typeahead-ändamål vid sökning/hämtning av signum. <br>
         Notera att minst 2 tecken måste anges för att sökningen ska utföras. <br>
         Sökträffar sorteras i fallande bokstavsordning enligt naturligt språk för en runforskare. Se responseobjekt för exempel.
       parameters:
@@ -601,7 +601,7 @@ paths:
         - Utgåva
         - Not implemented
       summary: Hämtar all data i en utgåva
-      description: 'Hämtar en fil som innehåller all data i en utgåva. TODO bestämma vilket format som returneras.'
+      description: 'Hämtar en fil som innehåller all data i en utgåva.'
       parameters:
         - name: edition_id
           in: path
@@ -706,10 +706,6 @@ components:
           type: string
           description: Identitet på utgåvan
           example: "2018"
-        name:
-          type: string
-          description: Namn på utgåvan
-          example: 2018 års utgåva av Samnordisk runtextdatabas
         latest:
           type: boolean
           description: Anger om utgåvan är den aktuella (senast utgivna)
