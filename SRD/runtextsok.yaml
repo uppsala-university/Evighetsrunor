@@ -8,9 +8,9 @@ info:
     runt runtexterna, bärarobjekt samt kopplad information hämtas via K-samsök.
   contact:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
-  version: 1.0.1
+  version: 2.0.0
 servers:
-  - description: Uppsala Universitet Evighetsrunor API
+  - description: r
     url: http://runor.test.uu.se/rest/
 
 ### Generella implementationsregler i API:et ###
@@ -1734,7 +1734,11 @@ components:
           required:
             - selection_group_id
             - item_id
+          discriminator:
+            propertyName: op
           properties:
+            expression:
+              $ref: '#/components/schemas/Expression'
             selection_group_id:
               type: string
               description: Anger identiteten för urvalsgruppen
@@ -1774,6 +1778,8 @@ components:
           discriminator:
             propertyName: op
           properties:
+            expression:
+              $ref: '#/components/schemas/Expression'
             textQueries:
               type: array
               items:
@@ -1872,7 +1878,11 @@ components:
           required:
             - from_year
             - to_year
+          discriminator:
+            propertyName: op
           properties:
+            expression:
+              $ref: '#/components/schemas/Expression'
             from_year:
               type: integer
               description: Anger start-årtal för intervallet. Angivet årtal inkluderas i sökningen.
@@ -1897,6 +1907,16 @@ components:
         - $ref: '#/components/schemas/TimeInterval'
       discriminator:
         propertyName: op
+        mapping:
+          And: '#/components/schemas/And'
+          Or: '#/components/schemas/Or'
+          Not: '#/components/schemas/Not'
+          TextQueryGroup: '#/components/schemas/TextQueryGroup'
+          Selection: '#/components/schemas/Selection'
+          TimeInterval: '#/components/schemas/TimeInterval'
+      properties:
+        op:
+          type: object
 
     Not:
       description: Logiskt uttryck bestående av ett uttryck som inte ska gälla.
