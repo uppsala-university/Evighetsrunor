@@ -10,7 +10,7 @@ info:
     url: https://www.raa.se/kulturarv/runor-och-runstenar/projektet-evighetsrunor/
   version: 2.0.0
 servers:
-  - description: r
+  - description: Uppsala Universitet Evighetsrunor API
     url: http://runor.test.uu.se/rest/
 
 ### Generella implementationsregler i API:et ###
