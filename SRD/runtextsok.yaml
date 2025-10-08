@@ -52,7 +52,7 @@ paths:
             example: "latest"
         - name: matching_text
           in: query
-          description: Anger initala tecken i de signum som eftersöks. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
+          description: Anger initiala tecken i det signum som eftersöks. Sökning av fler signa anges kommaseparerat. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
           schema:
             type: string
             minLength: 2
