@@ -11,7 +11,7 @@ info:
   version: 2.0.0
 servers:
   - description: Uppsala Universitet Evighetsrunor API
-    url: http://runor.test.uu.se/rest/
+    url: https://runor.test.uu.se/rest/
 
 ### Generella implementationsregler i API:et ###
 # Regel 1: Arrayer har alltid ett värde.
@@ -56,7 +56,7 @@ paths:
           schema:
             type: string
             minLength: 2
-            example: "U "
+            example: "Öl"
       responses:
         200:
           description: |
@@ -555,6 +555,58 @@ paths:
                 message: Signum eller URI saknas
                 path: /selection/12/test
                 timestamp: 1990-12-31T23:59:60Z
+        500:
+          description: (Internal server error). Ett oväntat fel inträffade.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /inscriptions/items:
+    get:
+      tags:
+        - Runtexter
+      summary: Hämtar runinskrifter med samma sökparametrar som /signa.
+      description: |
+        Hämtar runinskrifter med samma sökparametrar som /signa (edition_id och matching_text),
+        men returnerar fullständig runinskriftsinformation i samma format som /inscriptions/{id}.
+        Notera att minst 2 tecken måste anges för matching_text.
+      parameters:
+        - name: edition_id
+          in: query
+          description: Anger id för önskad utgåva. Ange "latest" för senaste utgåvan.
+          required: true
+          schema:
+            type: string
+            example: "latest"
+        - name: matching_text
+          in: query
+          description: Anger initiala tecken i det signum som eftersöks. Sökning av fler signa anges kommaseparerat. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
+          schema:
+            type: string
+            minLength: 2
+            example: "Öl"
+      responses:
+        200:
+          description: (OK). Poster hittades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunicInscription'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: (Not found). Inga poster hittades.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         500:
           description: (Internal server error). Ett oväntat fel inträffade.
           content:
