@@ -56,7 +56,7 @@ paths:
           schema:
             type: string
             minLength: 2
-            example: "U "
+            example: "Öl"
       responses:
         200:
           description: |
@@ -585,7 +585,7 @@ paths:
           schema:
             type: string
             minLength: 2
-            example: "U "
+            example: "Öl"
       responses:
         200:
           description: (OK). Poster hittades
