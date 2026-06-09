@@ -1645,6 +1645,11 @@ components:
           type: string
           nullable: true
           example: Bro socken
+        placement:
+          description: Anger var inskriftsbäraren finns belägen.
+          type: string
+          nullable: true
+          example: Kalmar läns museum (KLM 24962)
         current:
           # Anger inskriftsbärarens senaste kända (oftast nuvarande) position
           $ref: '#/components/schemas/Geometry'
