@@ -1962,6 +1962,7 @@ components:
         - $ref: '#/components/schemas/TextQueryGroup'
         - $ref: '#/components/schemas/Selection'
         - $ref: '#/components/schemas/TimeInterval'
+        - $ref: '#/components/schemas/Extant'
       discriminator:
         propertyName: op
         mapping:
@@ -1971,6 +1972,7 @@ components:
           TextQueryGroup: '#/components/schemas/TextQueryGroup'
           Selection: '#/components/schemas/Selection'
           TimeInterval: '#/components/schemas/TimeInterval'
+          Extant: '#/components/schemas/Extant'
       properties:
         op:
           type: object
@@ -2023,3 +2025,21 @@ components:
               minItems: 1
               items:
                 $ref: '#/components/schemas/Expression'
+
+    Extant:
+      description: |
+        Sökfråga som används för att avgöra om ristningen är bevarad (sökning på bara försvunna, bara bevarade eller bådadera).
+        extant = true (finns)
+        extant = false (finns ej, förkommen)
+        extant = null (hitta alla, både 1 och 0)
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - extant
+          discriminator:
+            propertyName: op
+          properties:
+            extant:
+              type: boolean
+              example: true
