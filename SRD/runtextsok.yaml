@@ -1689,11 +1689,14 @@ components:
           description: Anger id för önskad utgåva. Ange "latest" för senaste utgåvan.
           required: true
           example: "latest"
-        matching_text:
-          type: string
-          description: Anger initiala tecken i det signum som eftersöks. Sökning av fler signa anges kommaseparerat. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
-          minLength: 2
-          example: "Öl"
+        signa_list:
+          type: array
+          description: Anger initiala tecken i det signum som eftersöks. Sökning anges son en lista i JSON-format. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
+          items:
+            type: string
+            description: Anger initiala tecken i det signum som eftersöks.
+            minLength: 2
+            example: "Öl 11"
 
     InscriptionsItemsSearchPostResults:
       description: Det totala resultatet av en signa-sökning i form av en lista med inskrifter.
