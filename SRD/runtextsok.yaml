@@ -11,7 +11,7 @@ info:
   version: 2.0.0
 servers:
   - description: Uppsala Universitet Evighetsrunor API
-    url: http://runor.test.uu.se/rest/
+    url: https://runor.test.uu.se/rest/
 
 ### Generella implementationsregler i API:et ###
 # Regel 1: Arrayer har alltid ett värde.
@@ -40,7 +40,7 @@ paths:
       description: |
         Hämtar en lista med signum  och dess kopplade runinskrifters identiteter (uuid). <br>
         Lämpligt att användas för typeahead-ändamål vid sökning/hämtning av signum. <br>
-        Notera att minst 2 tecken måste anges för att sökningen ska utföras. <br>
+        Notera att minst 2 tecken per signum måste anges för att sökningen ska utföras. <br>
         Sökträffar sorteras i fallande bokstavsordning enligt naturligt språk för en runforskare. Se responseobjekt för exempel.
       parameters:
         - name: edition_id
@@ -56,7 +56,7 @@ paths:
           schema:
             type: string
             minLength: 2
-            example: "U "
+            example: "Öl"
       responses:
         200:
           description: |
@@ -561,6 +561,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /inscriptions/items:
+    post:
+      tags:
+        - Runtexter
+      summary: Hämtar en lista med information om varje runinskrift.
+      description: |
+        Hämtar runinskrifter utifrån exakta sökparametrar för varje signa (edition_id och matching_text) och 
+        returnerar fullständig runinskriftsinformation i samma format som /inscriptions/{id}.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscriptionsItemsSearchPostQuery'
+        required: true
+      responses:
+        200:
+          description: (OK). Poster hittades
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscriptionsItemsSearchPostResults'
+        400:
+          description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: (Internal server error). Ett oväntat fel inträffade.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      x-codegen-request-body-name: query
 
   /editions:
     get:
@@ -1593,6 +1628,11 @@ components:
           type: string
           nullable: true
           example: Bro socken
+        placement:
+          description: Anger var inskriftsbäraren finns belägen.
+          type: string
+          nullable: true
+          example: Kalmar läns museum (KLM 24962)
         current:
           # Anger inskriftsbärarens senaste kända (oftast nuvarande) position
           $ref: '#/components/schemas/Geometry'
@@ -1630,6 +1670,35 @@ components:
         language:
           $ref: '#/components/schemas/ModernLanguage'
 
+    InscriptionsItemsSearchPostQuery:
+      description: Sökfråga som används för att sätta sökvillkor vid sökning av inskrifter med hjälp av på signa.
+      required:
+        - edition_id
+        - matching_text
+      type: object
+      properties:
+        edition_id:
+          type: string
+          description: Anger id för önskad utgåva. Ange "latest" för senaste utgåvan.
+          required: true
+          example: "latest"
+        signa_list:
+          type: array
+          description: Exakta tecken i det signum som eftersöks anges. Sökning anges son en lista i JSON-format. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
+          items:
+            type: string
+            description: Exakta tecken i det signum som eftersöks anges.
+            minLength: 2
+            example: "Öl 11"
+
+    InscriptionsItemsSearchPostResults:
+      description: Det totala resultatet av en signa-sökning i form av en lista med inskrifter.
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunicInscription'
+
     SearchPostResults:
       description: Det totala resultatet av en avancerad sökning.
       properties:
@@ -1643,8 +1712,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchResult'
-
-
 
     SearchResult:
       description: Ett av flera resultat av en sökfråga.
@@ -1905,6 +1972,7 @@ components:
         - $ref: '#/components/schemas/TextQueryGroup'
         - $ref: '#/components/schemas/Selection'
         - $ref: '#/components/schemas/TimeInterval'
+        - $ref: '#/components/schemas/Extant'
       discriminator:
         propertyName: op
         mapping:
@@ -1914,6 +1982,7 @@ components:
           TextQueryGroup: '#/components/schemas/TextQueryGroup'
           Selection: '#/components/schemas/Selection'
           TimeInterval: '#/components/schemas/TimeInterval'
+          Extant: '#/components/schemas/Extant'
       properties:
         op:
           type: object
@@ -1966,3 +2035,21 @@ components:
               minItems: 1
               items:
                 $ref: '#/components/schemas/Expression'
+
+    Extant:
+      description: |
+        Sökfråga som används för att avgöra om ristningen är bevarad (sökning på bara försvunna, bara bevarade eller bådadera).
+        extant = true (finns)
+        extant = false (finns ej, förkommen)
+        extant = null (hitta alla, både 1 och 0)
+      allOf:
+        - $ref: '#/components/schemas/Expression'
+        - type: object
+          required:
+            - extant
+          discriminator:
+            propertyName: op
+          properties:
+            extant:
+              type: boolean
+              example: true
