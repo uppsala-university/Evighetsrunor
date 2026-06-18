@@ -566,11 +566,10 @@ paths:
     post:
       tags:
         - Runtexter
-      summary: Hämtar runinskrifter med samma sökparametrar som /signa.
+      summary: Hämtar en lista med information om varje runinskrift.
       description: |
-        Hämtar runinskrifter med samma sökparametrar som /signa (edition_id och matching_text),
-        men returnerar fullständig runinskriftsinformation i samma format som /inscriptions/{id}.
-        Notera att minst 2 tecken per signum måste anges för matching_text.
+        Hämtar runinskrifter utifrån exakta sökparametrar för varje signa (edition_id och matching_text) och 
+        returnerar fullständig runinskriftsinformation i samma format som /inscriptions/{id}.
       requestBody:
         content:
           application/json:
@@ -586,12 +585,6 @@ paths:
                 $ref: '#/components/schemas/InscriptionsItemsSearchPostResults'
         400:
           description: (Bad request). Felaktigt indata angavs till tjänsten (typiskt valideringsfel).
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: (Not found). Inga poster hittades.
           content:
             application/json:
               schema:
@@ -1691,10 +1684,10 @@ components:
           example: "latest"
         signa_list:
           type: array
-          description: Anger initiala tecken i det signum som eftersöks. Sökning anges son en lista i JSON-format. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
+          description: Exakta tecken i det signum som eftersöks anges. Sökning anges son en lista i JSON-format. Case insensitive, dvs "Öl" eller "öl" ger samma sökresultat.
           items:
             type: string
-            description: Anger initiala tecken i det signum som eftersöks.
+            description: Exakta tecken i det signum som eftersöks anges.
             minLength: 2
             example: "Öl 11"
 
